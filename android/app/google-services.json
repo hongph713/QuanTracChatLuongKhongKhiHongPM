@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "26266490364",
+    "firebase_url": "https://rapid-stream-460402-c3-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "rapid-stream-460402-c3",
+    "storage_bucket": "rapid-stream-460402-c3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26266490364:android:061145e33a6ad0449f4e79",
+        "android_client_info": {
+          "package_name": "com.example.datn_20242"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASi5SBqz25uZAQCQbDR6nwmxSP1_ABa8c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,49 @@
+name: datn_20242
+description: A new Flutter project.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+
+  # Firebase
+  firebase_core: ^2.32.0  # Luôn cần cho Firebase
+  cloud_firestore: ^4.17.4 # Để lưu trữ và truy xuất dữ liệu trạm
+  firebase_database: ^10.2.4
+
+  # Google Maps
+  google_maps_flutter: ^2.7.0
+  geolocator: ^9.0.2
+  geocoding: ^2.1.1
+  collection: ^1.19.1
+  intl: ^0.19.0 # Cho việc format ngày giờ (hoặc phiên bản mới hơn)
+  fl_chart: ^0.68.0
+  image: ^4.0.15
+  shared_preferences: ^2.2.3
+  provider: ^6.1.2
+  permission_handler: ^11.2.0
+  timezone: ^0.9.2
+  flutter_localizations:
+    sdk: flutter
+  # (Tùy chọn, nếu bạn muốn dùng Provider để quản lý state phức tạp hơn sau này)
+  # provider: ^6.0.0
+
+  cupertino_icons: ^1.0.2 # Mặc định có
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/brown_marker.png

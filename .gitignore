@@ -1,0 +1,71 @@
+gitignore
+# Miscellaneous
+*.class
+*.lock
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+# Android Studio
+# Generated UIs for IntelliJ/Android Studio (e.g. from a Swing form editor)
+# We recommend that you store these files in source control, but include this if you choose not to
+# *.form
+
+# System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Flutter/Dart specific
+.dart_tool/
+.packages
+build/
+#*.sksl.json # ShaderWarmUp files, can be large and are build artifacts
+
+# Pub files
+# We recommend against adding the pubspec.lock file to your .gitignore.
+# It should be committed to version control so that everyone on the team
+# and your CI server uses the same versions of dependencies.
+# However, if you have a reason to ignore it, uncomment the next line:
+# pubspec.lock
+
+# Android specific
+android/captures/
+android/.gradle/
+android/local.properties
+# android/key.properties # If you have a key.properties file for signing, it should be ignored
+
+# iOS specific
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+# ios/Flutter/Flutter.podspec # Often auto-generated, consider if you modify it manually
+ios/Runner/GeneratedPluginRegistrant.*
+*.xcworkspace
+# ios/Runner.xcworkspace/ # If you don't want to share the workspace
+# ios/xcuserdata/
+# ios/DerivedData/
+
+# Build results
+# If you have other build artifacts specific to your project, add them here
+# For example, if you generate APKs/AABs/IPAs directly in the project root
+# *.apk
+# *.aab
+# *.ipa
+
+# Sensitive information (examples, ensure you manage these properly)
+# secrets.json
+# .env
+# config.dart # If you have a local config file with sensitive data
