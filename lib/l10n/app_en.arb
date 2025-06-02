@@ -1,5 +1,8 @@
 {
   "@@locale": "en",
+
+  "appTitle": "Air Quality Monitoring",
+
   "settingsTitle": "Settings",
   "interfaceSectionTitle": "Interface",
   "languageSettingTitle": "Language",
@@ -10,30 +13,160 @@
   "darkTheme": "Dark",
   "systemTheme": "System",
   "notificationsSectionTitle": "Notifications",
-  "dailyNotificationsTitle": "Daily Notifications (7:00 AM)",
+  "dailyNotificationsTitle": "Daily notifications (7:00 AM)",
+  "noficationGeneralTitle": "General Notifications",
   "notificationsOn": "On",
   "notificationsOff": "Off",
-  "chooseLanguageModalTitle": "Choose Language",
-  "chooseThemeModalTitle": "Choose Theme",
+  "chooseLanguageModalTitle": "Choose language",
+  "chooseThemeModalTitle": "Choose theme",
+
   "mapTabLabel": "Map",
   "stationListTabLabel": "Station List",
   "settingsTabLabel": "Settings",
+  "stationList": "Station List",
+
   "aqiGood": "Good",
   "aqiModerate": "Moderate",
   "aqiUnhealthyForSensitive": "Unhealthy for Sensitive Groups",
   "aqiUnhealthy": "Unhealthy",
   "aqiVeryUnhealthy": "Very Unhealthy",
   "aqiHazardous": "Hazardous",
+
+  "aqiGoodMessage": "Air quality is good and safe for health",
+  "aqiModerateMessage": "Air quality is at moderate level",
+  "aqiUnhealthyForSensitiveMessage": "Sensitive groups may experience health problems",
+  "aqiUnhealthyMessage": "Everyone may experience health problems",
+  "aqiVeryUnhealthyMessage": "Serious health warning",
+  "aqiHazardousMessage": "Health emergency situation",
+
+  "aqiMessageGood": "Air quality is good!",
+  "aqiMessageModerate": "Air quality is moderate. Sensitive groups should be cautious.",
+  "aqiMessageUnhealthyForSensitive": "Unhealthy for sensitive groups. Limit outdoor activities!",
+  "aqiMessageUnhealthy": "Harmful to health. Everyone should limit outdoor activities.",
+  "aqiMessageVeryUnhealthy": "Very harmful to health. Everyone should stay indoors!",
+  "aqiMessageHazardous": "Hazardous. Everyone should stay indoors and turn on air purifiers!",
+
+  "mainPollutantPM25": "Main Pollutant: PM2.5",
+  "temperature": "Temperature",
+  "humidity": "Humidity",
+
   "healthRecommendationsTitle": "Health Recommendations",
+  "healthRecommendations": "Health Recommendations",
+  "enjoyOutdoorActivities": "Enjoy outdoor activities",
+  "openWindowsForFreshAir": "Open windows to bring clean and fresh air into the house",
+  "sensitiveGroupsReduceOutdoorExercise": "Sensitive groups should reduce outdoor exercise",
+  "closeWindowsToAvoidPollution": "Close windows to avoid polluted air outside",
+  "sensitiveGroupsWearMask": "Sensitive groups should wear masks when going outside",
+  "sensitiveGroupsUseAirPurifier": "Sensitive groups should turn on air purifiers",
+  "reduceOutdoorExercise": "Reduce outdoor exercise",
+  "runAirPurifier": "Run air purifier",
+  "avoidOutdoorExercise": "Avoid outdoor exercise",
+  "wearMaskWhenOutside": "Wear mask when outside",
+
+  "healthRecommendationGoodOutdoor": "Enjoy outdoor activities",
+  "healthRecommendationGoodWindows": "Open windows to bring clean, fresh air into your home",
+  "healthRecommendationModerateOutdoor": "Sensitive groups should reduce outdoor exercise",
+  "healthRecommendationModerateWindows": "Close windows to avoid polluted outdoor air",
+  "healthRecommendationModerateMask": "Sensitive groups should wear masks when going outside",
+  "healthRecommendationModerateAirPurifier": "Sensitive groups should turn on air purifiers",
+  "healthRecommendationUnhealthySensitiveOutdoor": "Reduce outdoor activities",
+  "healthRecommendationUnhealthySensitiveWindows": "Close windows to avoid polluted outdoor air",
+  "healthRecommendationUnhealthySensitiveMask": "Sensitive groups should wear masks when going outside",
+  "healthRecommendationUnhealthySensitiveAirPurifier": "Run air purifiers",
+  "healthRecommendationUnhealthyOutdoor": "Avoid outdoor exercise",
+  "healthRecommendationUnhealthyWindows": "Close windows to avoid polluted outdoor air",
+  "healthRecommendationUnhealthyMask": "Wear masks when going outside",
+  "healthRecommendationUnhealthyAirPurifier": "Run air purifiers",
+  "healthRecommendationVeryUnhealthyOutdoor": "Avoid all outdoor activities",
+  "healthRecommendationVeryUnhealthyWindows": "Keep windows tightly closed. Stay indoors.",
+  "healthRecommendationVeryUnhealthyMask": "Must wear high-quality masks if going outside",
+  "healthRecommendationVeryUnhealthyAirPurifier": "Run air purifiers continuously",
+  "healthRecommendationHazardousOutdoor": "Absolutely avoid all outdoor activities. Stay indoors.",
+  "healthRecommendationHazardousWindows": "Keep all windows tightly closed. Do not go outside unless necessary.",
+  "healthRecommendationHazardousMask": "Must wear N95/FFP2 masks if going outside.",
+  "healthRecommendationHazardousAirPurifier": "Run air purifiers at highest setting.",
+
   "dataHistoryTitle": "Data History",
-  "noDataForPeriod": "No data for this period.",
+  "noHistoricalData": "No historical data available.",
+  "errorLoadingHistoryData": "Error loading historical data.",
+  "last24Hours": "Last 24 hours",
+  "last7Days": "Last 7 days",
+  "noDataForTimeRange": "No data available for this time range.",
+  "noDataForPeriod": "No data available for this period.",
+  "hour": "Hour",
+  "day": "Day",
+  "noDataToDisplay": "No data to display.",
+  "average": "average",
+
   "loadingData": "Loading data...",
+  "loadingMapData": "Loading map data...",
   "errorLoadingData": "Error loading data.",
-  "searchStationHint": "Search station by name...",
-  "appTitle": "Air Quality Monitor",
+  "invalidDataFormat": "Firebase data format is invalid.",
+  "dataProcessingError": "Data processing error",
+  "firebaseConnectionError": "Firebase connection error",
+  "connectingToDatabase": "Connecting to database...",
+  "error": "error",
+  "noData": "no",
+  "noDeviceData": "No device data available.",
+  "noStationData": "No station data available.",
+  "noStationFound": "No stations found for",
+  "noStationsToDisplay": "No stations to display.",
+
+  "searchStationHint": "Search by station name...",
+  "searchByStationName": "Search by station name...",
+
+  "unknownLocation": "Unknown location",
+  "location": "Location",
+  "addressNotFound": "Address not found",
+  "errorGettingLocation": "Error getting location name from coordinates",
+  "errorLocation": "Error getting location",
+  "cannotLocate": "Cannot locate",
+  "unknownLocationDefaultCoords": "Unknown location (default coordinates)",
+  "locationWithCoords": "Location ({lat}, {long})",
+  "@locationWithCoords": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "long": {
+        "type": "String"
+      }
+    }
+  },
+  "addressNotFoundWithCoords": "Address not found ({lat}, {long})",
+  "@addressNotFoundWithCoords": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "long": {
+        "type": "String"
+      }
+    }
+  },
+  "errorGettingLocationFromCoords": "Error getting location name from coordinates",
+  "errorLocationWithCoords": "Error getting location ({lat}, {long})",
+  "@errorLocationWithCoords": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "long": {
+        "type": "String"
+      }
+    }
+  },
+
+  "locationServiceDisabled": "Location service is disabled",
+  "locationPermissionDenied": "Location permission denied",
+  "locationPermissionDeniedForever": "Location permission denied forever",
+  "locationPermissionDeniedForeverMessage": "Location permission is permanently denied. Please open settings to grant permission.",
+
+  "markedDevicesOnMap": "Marked",
+  "devicesOnMap": "devices on map",
+
   "importantNotificationTitle": "Important Notification",
-  "notificationPermissionPrompt": "Would you like to receive daily air quality notifications (e.g., at 7:00 AM)?",
+  "notificationPermissionPrompt": "Would you like to receive daily air quality notifications? (e.g., at 7:00 AM)",
   "noThanksButton": "NO, THANKS",
-  "yesEnableButton": "YES, ENABLE",
-  "noficationGeneralTitle": "General Notification"
+  "yesEnableButton": "YES, ENABLE NOW"
 }

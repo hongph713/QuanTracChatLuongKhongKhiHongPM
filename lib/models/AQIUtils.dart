@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Lớp để lưu trữ thông tin khuyến nghị sức khỏe
 class HealthRecommendation {
@@ -17,7 +18,7 @@ class HealthRecommendation {
 }
 
 class AQIUtils {
-  // Tính chỉ số AQI dựa trên nồng độ bụi mịn PM2.5 (μg/m³)
+// Tính chỉ số AQI dựa trên nồng độ bụi mịn PM2.5 (μg/m³)
   static int calculateAQI(double pm25) {
     const List<double> pm25Breakpoints = [0, 12.1, 35.5, 55.5, 150.5, 250.5, 350.5, 500.5];
     const List<int> aqiBreakpoints = [0, 51, 101, 151, 201, 301, 401, 500];
@@ -48,7 +49,7 @@ class AQIUtils {
     return aqiValue.round();
   }
 
-  // Lấy màu dựa trên chỉ số AQI
+// Lấy màu dựa trên chỉ số AQI
   static Color getAQIColor(int aqi) {
     if (aqi <= 50) return Colors.green;
     if (aqi <= 100) return const Color(0xFFFFEB3B);
@@ -67,28 +68,49 @@ class AQIUtils {
     return const Color(0xFFF9F5F2); // Màu nâu (SaddleBrown)
   }
 
-
-  // Lấy mô tả/phân loại mức độ AQI
-  static String getAQIDescription(int aqi) {
-    if (aqi <= 50) return 'Chỉ số AQI';
-    if (aqi <= 100) return 'Chỉ số AQI';
-    if (aqi <= 150) return 'Chỉ số AQI';
-    if (aqi <= 200) return 'Chỉ số AQI';
-    if (aqi <= 300) return 'Chỉ số AQI';
-    return 'Chỉ số AQI';
+// Lấy mô tả/phân loại mức độ AQI với localization
+  static String getAQIDescription(int aqi, [AppLocalizations? l10n]) {
+    if (l10n != null) {
+      // Sử dụng localization nếu có
+      if (aqi <= 50) return l10n.aqiGood;
+      if (aqi <= 100) return l10n.aqiModerate;
+      if (aqi <= 150) return l10n.aqiUnhealthyForSensitive;
+      if (aqi <= 200) return l10n.aqiUnhealthy;
+      if (aqi <= 300) return l10n.aqiVeryUnhealthy;
+      return l10n.aqiHazardous;
+    } else {
+      // Fallback cho trường hợp không có localization
+      if (aqi <= 50) return 'Tốt';
+      if (aqi <= 100) return 'Trung bình';
+      if (aqi <= 150) return 'Không lành mạnh cho nhóm nhạy cảm';
+      if (aqi <= 200) return 'Không lành mạnh';
+      if (aqi <= 300) return 'Rất không lành mạnh';
+      return 'Nguy hiểm';
+    }
   }
 
-  // Lấy thông điệp cảnh báo/khuyến nghị chung dựa trên AQI (cho StationInfoCard)
-  static String getAQIMessage(int aqi) {
-    if (aqi <= 50) return 'Chất lượng không khí tốt!';
-    if (aqi <= 100) return 'Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận.';
-    if (aqi <= 150) return 'Không tốt cho nhóm nhạy cảm. Hạn chế hoạt động ngoài trời!';
-    if (aqi <= 200) return 'Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời.';
-    if (aqi <= 300) return 'Rất có hại cho sức khỏe. Mọi người nên ở trong nhà!';
-    return 'Nguy hiểm. Mọi người nên ở trong nhà và bật máy lọc không khí!';
+// Lấy thông điệp cảnh báo/khuyến nghị chung dựa trên AQI với localization
+  static String getAQIMessage(int aqi, [AppLocalizations? l10n]) {
+    if (l10n != null) {
+      // Sử dụng localization nếu có
+      if (aqi <= 50) return l10n.aqiMessageGood;
+      if (aqi <= 100) return l10n.aqiMessageModerate;
+      if (aqi <= 150) return l10n.aqiMessageUnhealthyForSensitive;
+      if (aqi <= 200) return l10n.aqiMessageUnhealthy;
+      if (aqi <= 300) return l10n.aqiMessageVeryUnhealthy;
+      return l10n.aqiMessageHazardous;
+    } else {
+      // Fallback cho trường hợp không có localization
+      if (aqi <= 50) return 'Chất lượng không khí tốt!';
+      if (aqi <= 100) return 'Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận.';
+      if (aqi <= 150) return 'Không tốt cho nhóm nhạy cảm. Hạn chế hoạt động ngoài trời!';
+      if (aqi <= 200) return 'Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời.';
+      if (aqi <= 300) return 'Rất có hại cho sức khỏe. Mọi người nên ở trong nhà!';
+      return 'Nguy hiểm. Mọi người nên ở trong nhà và bật máy lọc không khí!';
+    }
   }
 
-  // HÀM ĐƯỢC THÊM LẠI để tương thích với StationInfoCard hiện tại
+// HÀM ĐƯỢC THÊM LẠI để tương thích với StationInfoCard hiện tại
   static IconData getWarningIcon(int aqi) {
     if (aqi <= 50) return Icons.check_circle_outline_rounded;
     if (aqi <= 100) return Icons.info_outline_rounded;
@@ -98,7 +120,7 @@ class AQIUtils {
     return Icons.gpp_bad_outlined;
   }
 
-  // Lấy Icon cảnh báo chính dựa trên AQI (có thể dùng hàm này hoặc getWarningIcon)
+// Lấy Icon cảnh báo chính dựa trên AQI (có thể dùng hàm này hoặc getWarningIcon)
   static IconData getRecommendationIconData(int aqi) {
     // Logic này giống hệt getWarningIcon, bạn có thể chọn dùng một trong hai
     // Hoặc làm cho getWarningIcon gọi getRecommendationIconData
@@ -110,63 +132,108 @@ class AQIUtils {
     return Icons.gpp_bad_outlined; // Nguy hiểm
   }
 
-  // HÀM MỚI: Lấy danh sách các khuyến nghị sức khỏe chi tiết
-  static List<HealthRecommendation> getHealthRecommendations(int aqi) {
+// HÀM MỚI: Lấy danh sách các khuyến nghị sức khỏe chi tiết với localization
+  static List<HealthRecommendation> getHealthRecommendations(int aqi, [AppLocalizations? l10n]) {
     Color iconColor = getAQIColor(aqi);
     List<HealthRecommendation> recommendations = [];
 
-    if (aqi <= 50) { // Tốt (Xanh lá)
-      recommendations.addAll([
-        HealthRecommendation(iconData: Icons.directions_bike, text: 'Tận hưởng các hoạt động ngoài trời', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Mở cửa sổ để đưa không khí sạch và trong lành vào nhà', iconColor: iconColor),
-      ]);
-    } else if (aqi <= 100) { // Trung bình (Vàng)
-      recommendations.addAll([
-        HealthRecommendation(iconData: Icons.directions_bike, text: 'Các nhóm nhạy cảm nên giảm tập thể dục ngoài trời', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng cửa sổ để tránh không khí bẩn bên ngoài', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.masks_outlined, text: 'Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.air_outlined, text: 'Các nhóm nhạy cảm nên khởi động máy lọc không khí', iconColor: iconColor),
-      ]);
-    } else if (aqi <= 150) { // Không tốt cho nhóm nhạy cảm (Cam)
-      recommendations.addAll([
-        HealthRecommendation(iconData: Icons.directions_bike, text: 'Giảm vận động ngoài trời', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng cửa sổ để tránh không khí bẩn bên ngoài', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.masks_outlined, text: 'Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí', iconColor: iconColor),
-      ]);
-    } else if (aqi <= 200) { // Không tốt cho sức khỏe (Đỏ)
-      recommendations.addAll([
-        HealthRecommendation(iconData: Icons.directions_bike, text: 'Tránh tập thể dục ngoài trời', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng cửa sổ để tránh không khí bẩn bên ngoài',  iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.masks_outlined, text: 'Đeo khẩu trang khi ra ngoài', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí', iconColor: iconColor),
-      ]);
-    } else if (aqi <= 300) { // Rất không tốt (Tím)
-      recommendations.addAll([
-        HealthRecommendation(iconData: Icons.directions_bike, text: 'Tránh mọi hoạt động ngoài trời', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng kín cửa sổ. Ở trong nhà.', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.masks_outlined, text: 'Bắt buộc đeo khẩu trang chất lượng cao nếu phải ra ngoài', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí liên tục', iconColor: iconColor),
-      ]);
-    } else { // Nguy hiểm (Nâu)
-      recommendations.addAll([
-        HealthRecommendation(iconData: Icons.directions_bike, text: 'Tránh tuyệt đối mọi hoạt động ngoài trời. Ở trong nhà.', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng kín tất cả cửa sổ. Không ra ngoài nếu không cần thiết.',  iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.masks_outlined, text: 'Bắt buộc đeo khẩu trang N95/FFP2 nếu phải ra ngoài.', iconColor: iconColor),
-        HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí ở mức cao nhất.', iconColor: iconColor),
-      ]);
+    if (l10n != null) {
+      // Sử dụng localization
+      if (aqi <= 50) { // Tốt (Xanh lá)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: l10n.healthRecommendationGoodOutdoor, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: l10n.healthRecommendationGoodWindows, iconColor: iconColor),
+        ]);
+      } else if (aqi <= 100) { // Trung bình (Vàng)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: l10n.healthRecommendationModerateOutdoor, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: l10n.healthRecommendationModerateWindows, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: l10n.healthRecommendationModerateMask, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: l10n.healthRecommendationModerateAirPurifier, iconColor: iconColor),
+        ]);
+      } else if (aqi <= 150) { // Không tốt cho nhóm nhạy cảm (Cam)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: l10n.healthRecommendationUnhealthySensitiveOutdoor, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: l10n.healthRecommendationUnhealthySensitiveWindows, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: l10n.healthRecommendationUnhealthySensitiveMask, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: l10n.healthRecommendationUnhealthySensitiveAirPurifier, iconColor: iconColor),
+        ]);
+      } else if (aqi <= 200) { // Không tốt cho sức khỏe (Đỏ)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: l10n.healthRecommendationUnhealthyOutdoor, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: l10n.healthRecommendationUnhealthyWindows, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: l10n.healthRecommendationUnhealthyMask, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: l10n.healthRecommendationUnhealthyAirPurifier, iconColor: iconColor),
+        ]);
+      } else if (aqi <= 300) { // Rất không tốt (Tím)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: l10n.healthRecommendationVeryUnhealthyOutdoor, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: l10n.healthRecommendationVeryUnhealthyWindows, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: l10n.healthRecommendationVeryUnhealthyMask, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: l10n.healthRecommendationVeryUnhealthyAirPurifier, iconColor: iconColor),
+        ]);
+      } else { // Nguy hiểm (Nâu)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: l10n.healthRecommendationHazardousOutdoor, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: l10n.healthRecommendationHazardousWindows, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: l10n.healthRecommendationHazardousMask, iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: l10n.healthRecommendationHazardousAirPurifier, iconColor: iconColor),
+        ]);
+      }
+    } else {
+      // Fallback cho trường hợp không có localization
+      if (aqi <= 50) { // Tốt (Xanh lá)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: 'Tận hưởng các hoạt động ngoài trời', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Mở cửa sổ để đưa không khí sạch và trong lành vào nhà', iconColor: iconColor),
+        ]);
+      } else if (aqi <= 100) { // Trung bình (Vàng)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: 'Các nhóm nhạy cảm nên giảm tập thể dục ngoài trời', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng cửa sổ để tránh không khí bẩn bên ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: 'Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: 'Các nhóm nhạy cảm nên khởi động máy lọc không khí', iconColor: iconColor),
+        ]);
+      } else if (aqi <= 150) { // Không tốt cho nhóm nhạy cảm (Cam)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: 'Giảm vận động ngoài trời', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng cửa sổ để tránh không khí bẩn bên ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: 'Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí', iconColor: iconColor),
+        ]);
+      } else if (aqi <= 200) { // Không tốt cho sức khỏe (Đỏ)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: 'Tránh tập thể dục ngoài trời', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng cửa sổ để tránh không khí bẩn bên ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: 'Đeo khẩu trang khi ra ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí', iconColor: iconColor),
+        ]);
+      } else if (aqi <= 300) { // Rất không tốt (Tím)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: 'Tránh mọi hoạt động ngoài trời', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng kín cửa sổ. Ở trong nhà.', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: 'Bắt buộc đeo khẩu trang chất lượng cao nếu phải ra ngoài', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí liên tục', iconColor: iconColor),
+        ]);
+      } else { // Nguy hiểm (Nâu)
+        recommendations.addAll([
+          HealthRecommendation(iconData: Icons.directions_bike, text: 'Tránh tuyệt đối mọi hoạt động ngoài trời. Ở trong nhà.', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.sensor_window_outlined, text: 'Đóng kín tất cả cửa sổ. Không ra ngoài nếu không cần thiết.', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.masks_outlined, text: 'Bắt buộc đeo khẩu trang N95/FFP2 nếu phải ra ngoài.', iconColor: iconColor),
+          HealthRecommendation(iconData: Icons.air_outlined, text: 'Chạy máy lọc không khí ở mức cao nhất.', iconColor: iconColor),
+        ]);
+      }
     }
     return recommendations;
   }
 
-
-  // Tạo BitmapDescriptor cho marker với màu tương ứng với AQI
+// Tạo BitmapDescriptor cho marker với màu tương ứng với AQI
   static Future<BitmapDescriptor> getMarkerIconByAQI(int aqi) async {
     Color color = getAQIColor(aqi);
     return BitmapDescriptor.defaultMarkerWithHue(_getHueFromColor(color));
   }
 
-  // Chuyển đổi Color sang giá trị Hue cho BitmapDescriptor
+// Chuyển đổi Color sang giá trị Hue cho BitmapDescriptor
   static double _getHueFromColor(Color color) {
     if (color == Colors.green) return BitmapDescriptor.hueGreen;
     if (color == const Color(0xFFFFEB3B)) return BitmapDescriptor.hueYellow;
@@ -177,4 +244,3 @@ class AQIUtils {
     return BitmapDescriptor.hueRed; // Mặc định
   }
 }
-

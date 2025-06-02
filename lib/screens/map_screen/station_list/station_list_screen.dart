@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:collection/collection.dart'; // THÊM IMPORT NÀY
-import '../../../models/station.dart'; // Model Station của bạn
-import '../widgets/station_info_card.dart'; // Widget StationInfoCard bạn đã xây dựng
+import 'package:collection/collection.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../models/station.dart';
+import '../widgets/station_info_card.dart';
 
 class StationListScreen extends StatefulWidget {
-  final Function(String stationId)? onStationSelected; // Callback khi một trạm được chọn
+  final Function(String stationId)? onStationSelected;
 
   const StationListScreen({Key? key, this.onStationSelected}) : super(key: key);
 
@@ -18,34 +19,47 @@ class _StationListScreenState extends State<StationListScreen> {
   final DatabaseReference _databaseRef = FirebaseDatabase.instance.ref().child('cacThietBiQuanTrac');
   StreamSubscription<DatabaseEvent>? _stationsSubscription;
 
-  List<Station> _allStations = []; // Danh sách tất cả các trạm từ Firebase
-  List<Station> _filteredStations = []; // Danh sách trạm đã được lọc bởi tìm kiếm
+  List<Station> _allStations = [];
+  List<Station> _filteredStations = [];
 
   bool _isLoading = true;
-  String _statusMessage = ''; // Để hiển thị thông báo (lỗi, không có dữ liệu, v.v.)
+  String _statusMessage = '';
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     print("[StationListScreen] initState called");
-    _listenToFirebaseData();
-    _searchController.addListener(_filterStations); // Gọi _filterStations mỗi khi text thay đổi
+    _searchController.addListener(_filterStations);
+    // Delay để đảm bảo context đã sẵn sàng cho localization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenToFirebaseData();
+    });
   }
 
   void _listenToFirebaseData() {
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) {
+      print("[StationListScreen] AppLocalizations not available yet, retrying...");
+      Future.delayed(const Duration(milliseconds: 100), _listenToFirebaseData);
+      return;
+    }
+
     print("[StationListScreen] Starting to listen to Firebase data");
     if (mounted) {
       setState(() {
         _isLoading = true;
-        _statusMessage = 'Đang tải dữ liệu...';
+        _statusMessage = l10n.loadingData ?? 'Đang tải dữ liệu...';
       });
     }
 
     _stationsSubscription = _databaseRef.onValue.listen(
-      // Đánh dấu callback này là async để có thể dùng await bên trong
           (DatabaseEvent event) async {
         if (!mounted) return;
+
+        final currentL10n = AppLocalizations.of(context);
+        if (currentL10n == null) return;
+
         print("[StationListScreen] Received Firebase data event");
         _isLoading = false;
 
@@ -63,7 +77,7 @@ class _StationListScreenState extends State<StationListScreen> {
           if (data is! Map) {
             setState(() {
               _allStations = [];
-              _statusMessage = 'Dữ liệu Firebase không đúng định dạng.';
+              _statusMessage = currentL10n.invalidDataFormat ?? 'Dữ liệu Firebase không đúng định dạng.';
               _filterStations();
             });
             print("[StationListScreen] Firebase data is not a Map.");
@@ -71,20 +85,21 @@ class _StationListScreenState extends State<StationListScreen> {
           }
 
           final Map<dynamic, dynamic> stationDataMap = data as Map<dynamic, dynamic>;
-          // Sử dụng List<Future<Station?>> để xử lý trường hợp fromFirebase có thể trả về null hoặc lỗi
           final List<Future<Station?>> futureStations = [];
 
           stationDataMap.forEach((key, value) {
             if (value is Map) {
-              // Giả sử Station.fromFirebase là async và có thể trả về Future<Station>
-              // hoặc Future<Station?> nếu có thể có lỗi parse cho từng item
+              // Sử dụng phiên bản localized của fromFirebase
               futureStations.add(
-                  Station.fromFirebase(value as Map<dynamic,dynamic>, key.toString())
-                      .then((station) => station) // Đảm bảo kiểu trả về là Future<Station?>
+                  Station.fromFirebaseLocalized(
+                      value as Map<dynamic, dynamic>,
+                      key.toString(),
+                      currentL10n
+                  ).then((station) => station)
                       .catchError((e, s) {
                     print("[StationListScreen] Error parsing station with key $key: $e");
                     print(s);
-                    return null; // Trả về null nếu có lỗi parse cho một trạm cụ thể
+                    return null;
                   })
               );
             } else {
@@ -92,10 +107,8 @@ class _StationListScreenState extends State<StationListScreen> {
             }
           });
 
-          // Đợi tất cả các Future hoàn thành và lọc bỏ các giá trị null (do lỗi parse)
           final List<Station?> parsedStationsNullable = await Future.wait(futureStations);
           final List<Station> fetchedStations = parsedStationsNullable.whereType<Station>().toList();
-
 
           setState(() {
             _allStations = fetchedStations;
@@ -108,7 +121,7 @@ class _StationListScreenState extends State<StationListScreen> {
           print(s);
           setState(() {
             _allStations = [];
-            _statusMessage = 'Lỗi xử lý dữ liệu: ${e.toString()}';
+            _statusMessage = '${currentL10n.dataProcessingError ?? "Lỗi xử lý dữ liệu"}: ${e.toString()}';
             _filterStations();
           });
         }
@@ -116,10 +129,11 @@ class _StationListScreenState extends State<StationListScreen> {
       onError: (error) {
         print("[StationListScreen] Firebase stream error: $error");
         if (mounted) {
+          final currentL10n = AppLocalizations.of(context);
           setState(() {
             _isLoading = false;
             _allStations = [];
-            _statusMessage = 'Lỗi kết nối Firebase: ${error.toString()}';
+            _statusMessage = '${currentL10n?.firebaseConnectionError ?? "Lỗi kết nối Firebase"}: ${error.toString()}';
             _filterStations();
           });
         }
@@ -129,6 +143,10 @@ class _StationListScreenState extends State<StationListScreen> {
 
   void _filterStations() {
     if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+
     final query = _searchController.text.toLowerCase();
     List<Station> tempFilteredStations;
 
@@ -144,20 +162,20 @@ class _StationListScreenState extends State<StationListScreen> {
     String newStatusMessage = '';
     if (!_isLoading) {
       if (_allStations.isEmpty) {
-        if (_statusMessage.toLowerCase().contains('lỗi') ||
-            _statusMessage == 'Dữ liệu Firebase không đúng định dạng.' ||
-            _statusMessage == 'Không có dữ liệu thiết bị nào.') {
+        if (_statusMessage.toLowerCase().contains(l10n.error?.toLowerCase() ?? 'lỗi') ||
+            _statusMessage.contains(l10n.invalidDataFormat ?? 'Dữ liệu Firebase không đúng định dạng.') ||
+            _statusMessage.contains(l10n.noDeviceData ?? 'Không có dữ liệu thiết bị nào.')) {
           newStatusMessage = _statusMessage;
         } else {
-          newStatusMessage = 'Không có dữ liệu trạm nào.';
+          newStatusMessage = l10n.noStationData ?? 'Không có dữ liệu trạm nào.';
         }
       } else if (tempFilteredStations.isEmpty) {
         if (query.isNotEmpty) {
-          newStatusMessage = 'Không tìm thấy trạm nào cho "$query".';
+          newStatusMessage = '${l10n.noStationFound ?? "Không tìm thấy trạm nào cho"} "$query".';
         }
       }
     } else {
-      newStatusMessage = 'Đang tải dữ liệu...';
+      newStatusMessage = l10n.loadingData ?? 'Đang tải dữ liệu...';
     }
 
     if (_filteredStations.length != tempFilteredStations.length ||
@@ -180,10 +198,13 @@ class _StationListScreenState extends State<StationListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     print("[StationListScreen] build called. Loading: $_isLoading, Status: '$_statusMessage', AllStations: ${_allStations.length}, FilteredStations: ${_filteredStations.length}");
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Danh sách trạm đo'),
+        title: Text(l10n?.stationList ?? 'Danh sách trạm đo'),
         centerTitle: true,
       ),
       body: Column(
@@ -196,12 +217,14 @@ class _StationListScreenState extends State<StationListScreen> {
   }
 
   Widget _buildSearchBar() {
+    final l10n = AppLocalizations.of(context);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Tìm kiếm theo tên trạm...',
+          hintText: l10n?.searchByStationName ?? 'Tìm kiếm theo tên trạm...',
           prefixIcon: const Icon(Icons.search, color: Colors.grey),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30.0),
@@ -226,6 +249,8 @@ class _StationListScreenState extends State<StationListScreen> {
   }
 
   Widget _buildStationList() {
+    final l10n = AppLocalizations.of(context);
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -235,7 +260,9 @@ class _StationListScreenState extends State<StationListScreen> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Text(
-            _statusMessage.isNotEmpty ? _statusMessage : 'Không có trạm nào để hiển thị.',
+            _statusMessage.isNotEmpty
+                ? _statusMessage
+                : (l10n?.noStationsToDisplay ?? 'Không có trạm nào để hiển thị.'),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16.0, color: Colors.grey[600]),
           ),

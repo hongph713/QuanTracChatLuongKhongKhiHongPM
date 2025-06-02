@@ -1,16 +1,14 @@
-// screens/map_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../models/AQIUtils.dart';
 import '../../../models/station.dart';
 import '../../station_detail_screen/station_detail_screen.dart';
 import 'station_info_card.dart';
-
-
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -38,8 +36,11 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     print("[MapScreen] initState called");
-    _setupLocationPermission();
-    _listenToFirebaseData();
+    // Delay để đảm bảo context đã sẵn sàng cho localization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupLocationPermission();
+      _listenToFirebaseData();
+    });
   }
 
   @override
@@ -50,15 +51,20 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _setupLocationPermission() async {
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+
     print("[MapScreen] Setting up location permissions");
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      setState(() {
-        _streamStatusMessage = 'Dịch vụ vị trí bị tắt';
-      });
+      if (mounted) {
+        setState(() {
+          _streamStatusMessage = l10n.locationServiceDisabled ?? 'Dịch vụ vị trí bị tắt';
+        });
+      }
       return;
     }
 
@@ -66,17 +72,21 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        setState(() {
-          _streamStatusMessage = 'Quyền vị trí bị từ chối';
-        });
+        if (mounted) {
+          setState(() {
+            _streamStatusMessage = l10n.locationPermissionDenied ?? 'Quyền vị trí bị từ chối';
+          });
+        }
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _streamStatusMessage = 'Quyền vị trí bị từ chối vĩnh viễn';
-      });
+      if (mounted) {
+        setState(() {
+          _streamStatusMessage = l10n.locationPermissionDeniedForever ?? 'Quyền vị trí bị từ chối vĩnh viễn';
+        });
+      }
       return;
     }
 
@@ -93,20 +103,34 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _listenToFirebaseData() {
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) {
+      print("[MapScreen] AppLocalizations not available yet, retrying...");
+      Future.delayed(const Duration(milliseconds: 100), _listenToFirebaseData);
+      return;
+    }
+
     print("[MapScreen] Starting to listen to Firebase data");
-    setState(() {
-      isLoading = true;
-      _streamStatusMessage = 'Đang kết nối đến cơ sở dữ liệu...';
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        _streamStatusMessage = l10n.connectingToDatabase ?? 'Đang kết nối đến cơ sở dữ liệu...';
+      });
+    }
 
     _stationsSubscription = _databaseRef.child('cacThietBiQuanTrac').onValue.listen(
           (DatabaseEvent event) async {
+        if (!mounted) return;
+
+        final currentL10n = AppLocalizations.of(context);
+        if (currentL10n == null) return;
+
         print("[MapScreen] Received Firebase data event");
 
         if (event.snapshot.value == null) {
           setState(() {
             isLoading = false;
-            _streamStatusMessage = 'Không có dữ liệu thiết bị';
+            _streamStatusMessage = currentL10n.noDeviceData ?? 'Không có dữ liệu thiết bị';
             _markers.clear();
             _stations.clear();
           });
@@ -137,8 +161,8 @@ class _MapScreenState extends State<MapScreen> {
                 continue;
               }
 
-              // Tạo đối tượng Station từ dữ liệu Firebase
-              Station station = await Station.fromFirebase(value, key);
+              // Tạo đối tượng Station từ dữ liệu Firebase với localization
+              Station station = await Station.fromFirebaseLocalized(value, key, currentL10n);
               print("[MapScreen] Device location: ${station.latitude}, ${station.longitude}");
 
               // Thêm vào map stations
@@ -157,21 +181,20 @@ class _MapScreenState extends State<MapScreen> {
                 icon: markerIcon,
                 infoWindow: InfoWindow(
                   title: station.viTri,
-                  //snippet: 'AQI: $aqi - ${station.aqiDescription}',
+                  snippet: 'AQI: $aqi - ${station.getAqiDescription(currentL10n)}',
                 ),
                 onTap: () {
                   print("[MapScreen] Marker tapped: ${station.viTri}");
                   setState(() {
                     _selectedStation = station;
                   });
-                  onTap: (){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StationDetailScreen(station: station),
-                      ),
-                    );
-                  };
+                  // Điều hướng đến màn hình chi tiết
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StationDetailScreen(station: station),
+                    ),
+                  );
                 },
               );
 
@@ -187,7 +210,7 @@ class _MapScreenState extends State<MapScreen> {
             _stations = newStations;
             _markers = newMarkers;
             isLoading = false;
-            _streamStatusMessage = 'Đã đánh dấu ${newStations.length} thiết bị trên bản đồ';
+            _streamStatusMessage = '${currentL10n.markedDevicesOnMap ?? "Đã đánh dấu"} ${newStations.length} ${currentL10n.devicesOnMap ?? "thiết bị trên bản đồ"}';
 
             // Sau 3 giây, xóa thông báo
             Future.delayed(const Duration(seconds: 3), () {
@@ -214,7 +237,7 @@ class _MapScreenState extends State<MapScreen> {
             print("  - Temperature: ${station.nhietDo}°C");
             print("  - Humidity: ${station.doAm}%");
             print("  - Dust concentration: ${station.nongDoBuiMin}");
-            print("  - AQI: ${station.aqi} (${station.aqiDescription})");
+            print("  - AQI: ${station.aqi} (${station.getAqiDescription(currentL10n)})");
             print("  ------------------------------");
           });
 
@@ -222,16 +245,19 @@ class _MapScreenState extends State<MapScreen> {
           print("[MapScreen] Error processing Firebase data: $e");
           setState(() {
             isLoading = false;
-            _streamStatusMessage = 'Lỗi xử lý dữ liệu: ${e.toString()}';
+            _streamStatusMessage = '${currentL10n.dataProcessingError ?? "Lỗi xử lý dữ liệu"}: ${e.toString()}';
           });
         }
       },
       onError: (error) {
         print("[MapScreen] Firebase stream error: $error");
-        setState(() {
-          isLoading = false;
-          _streamStatusMessage = 'Lỗi kết nối: ${error.toString()}';
-        });
+        if (mounted) {
+          final currentL10n = AppLocalizations.of(context);
+          setState(() {
+            isLoading = false;
+            _streamStatusMessage = '${currentL10n?.firebaseConnectionError ?? "Lỗi kết nối"}: ${error.toString()}';
+          });
+        }
       },
     );
   }
@@ -285,7 +311,7 @@ class _MapScreenState extends State<MapScreen> {
     _mapController = controller;
   }
 
-  // Hàm di chuyển đến một thiết bị cụ thể
+// Hàm di chuyển đến một thiết bị cụ thể
   void _goToDevice(String deviceId) {
     if (_stations.containsKey(deviceId) && _mapController != null) {
       final station = _stations[deviceId]!;
@@ -310,6 +336,8 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     print("[MapScreen] build called. Loading: $isLoading, Status: $_streamStatusMessage, Markers: ${_markers.length}");
     return Scaffold(
       body: Stack(
@@ -334,7 +362,11 @@ class _MapScreenState extends State<MapScreen> {
 
           // Hiển thị loading indicator hoặc thông báo trạng thái
           if (isLoading)
-            const Center(child: CircularProgressIndicator(semanticsLabel: 'Đang tải dữ liệu bản đồ...')),
+            Center(
+                child: CircularProgressIndicator(
+                    semanticsLabel: l10n?.loadingMapData ?? 'Đang tải dữ liệu bản đồ...'
+                )
+            ),
 
           if (!isLoading && _streamStatusMessage.isNotEmpty)
             Positioned(
@@ -345,7 +377,8 @@ class _MapScreenState extends State<MapScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                      color: _streamStatusMessage.toLowerCase().contains("lỗi") || _streamStatusMessage.toLowerCase().contains("không")
+                      color: _streamStatusMessage.toLowerCase().contains(l10n?.error?.toLowerCase() ?? "lỗi") ||
+                          _streamStatusMessage.toLowerCase().contains(l10n?.noData?.toLowerCase() ?? "không")
                           ? Colors.redAccent.withOpacity(0.9)
                           : Colors.black.withOpacity(0.75),
                       borderRadius: BorderRadius.circular(20),
@@ -377,7 +410,6 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
-
           Positioned(
             bottom: 120, // Điều chỉnh vị trí theo ý muốn
             right: 16,
@@ -389,108 +421,39 @@ class _MapScreenState extends State<MapScreen> {
               onPressed: _goToMyLocation,
             ),
           ),
-
-
-          // Thêm các nút điều khiển
-          // Positioned(
-          //   bottom: _selectedStation != null ? 140 : 20,
-          //   right: 10,
-          //   child: Column(
-          //     mainAxisSize: MainAxisSize.min,
-          //     children: [
-          //       // Nút để hiển thị tất cả marker
-          //       FloatingActionButton(
-          //         heroTag: "btn_all",
-          //         mini: true,
-          //         backgroundColor: Colors.white,
-          //         child: const Icon(Icons.map, color: Colors.blue),
-          //         onPressed: _fitAllMarkers,
-          //       ),
-          //       const SizedBox(height: 8),
-          //
-          //       // Thêm các nút cho từng thiết bị nếu cần
-          //       // ..._stations.entries.map((entry) {
-          //       //   int index = _stations.keys.toList().indexOf(entry.key) + 1;
-          //       //   return Padding(
-          //       //     padding: const EdgeInsets.only(bottom: 8),
-          //       //     child: FloatingActionButton(
-          //       //       heroTag: "btn_device_$index",
-          //       //       mini: true,
-          //       //       backgroundColor: entry.value.aqiColor.withOpacity(0.7),
-          //       //       child: Text(
-          //       //         "$index",
-          //       //         style: TextStyle(
-          //       //             color: entry.value.aqiColor.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-          //       //             fontWeight: FontWeight.bold
-          //       //         ),
-          //       //       ),
-          //       //       onPressed: () => _goToDevice(entry.key),
-          //       //     ),
-          //       //   );
-          //       // }).toList(),
-          //     ],
-          //   ),
-          // ),
-
-          // Thêm chú thích về màu AQI
-          // Positioned(
-          //   top: MediaQuery.of(context).padding.top + 10,
-          //   left: 10,
-          //   child: Container(
-          //     padding: const EdgeInsets.all(8),
-          //     decoration: BoxDecoration(
-          //       color: Colors.white.withOpacity(0.8),
-          //       borderRadius: BorderRadius.circular(8),
-          //       boxShadow: [
-          //         BoxShadow(
-          //           color: Colors.black.withOpacity(0.1),
-          //           spreadRadius: 1,
-          //           blurRadius: 2,
-          //           offset: const Offset(0, 1),
-          //         )
-          //       ],
-          //     ),
-          //     child: Column(
-          //       crossAxisAlignment: CrossAxisAlignment.start,
-          //       mainAxisSize: MainAxisSize.min,
-          //       children: [
-          //         const Text('Chỉ số AQI:', style: TextStyle(fontWeight: FontWeight.bold)),
-          //         const SizedBox(height: 4),
-          //         _buildAQILegendItem(Colors.green, 'Tốt (0-50)'),
-          //         _buildAQILegendItem(Colors.yellow, 'Trung bình (51-100)'),
-          //         _buildAQILegendItem(Colors.orange, 'Không tốt cho nhóm nhạy cảm (101-150)'),
-          //         _buildAQILegendItem(Colors.red, 'Không tốt cho sức khỏe (151-200)'),
-          //         _buildAQILegendItem(Colors.purple, 'Rất không tốt (201-300)'),
-          //         _buildAQILegendItem(Colors.brown, 'Nguy hiểm (>300)'),
-          //       ],
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );
   }
 
   Future<void> _goToMyLocation() async {
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+
     try {
       // Kiểm tra quyền truy cập vị trí
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Quyền truy cập vị trí bị từ chối')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.locationPermissionDenied ?? 'Quyền truy cập vị trí bị từ chối')),
+            );
+          }
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Quyền truy cập vị trí bị từ chối vĩnh viễn. Vui lòng mở cài đặt để cấp quyền.'),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.locationPermissionDeniedForeverMessage ??
+                  'Quyền truy cập vị trí bị từ chối vĩnh viễn. Vui lòng mở cài đặt để cấp quyền.'),
+            ),
+          );
+        }
         return;
       }
 
@@ -498,7 +461,6 @@ class _MapScreenState extends State<MapScreen> {
       Position position = await Geolocator.getCurrentPosition();
       print("Vị trí hiện tại: ${position.latitude}, ${position.longitude}");
 
-      print(_mapController==null);
       // Di chuyển camera đến vị trí hiện tại
       if (_mapController != null) {
         _mapController!.animateCamera(
@@ -507,14 +469,16 @@ class _MapScreenState extends State<MapScreen> {
             16.0, // Mức zoom khi định vị
           ),
         );
-
       }
     } catch (e) {
       print("Lỗi khi định vị: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể định vị: ${e.toString()}')),
-      );
-    }}
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.cannotLocate ?? "Không thể định vị"}: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   Widget _buildAQILegendItem(Color color, String text) {
     return Padding(
@@ -536,7 +500,4 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
   }
-
 }
-
-

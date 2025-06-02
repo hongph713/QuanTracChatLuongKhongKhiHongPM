@@ -1,5 +1,8 @@
 {
   "@@locale": "vi",
+
+  "appTitle": "Quan Trắc Không Khí",
+
   "settingsTitle": "Cài đặt",
   "interfaceSectionTitle": "Giao diện",
   "languageSettingTitle": "Ngôn ngữ",
@@ -11,29 +14,159 @@
   "systemTheme": "Theo hệ thống",
   "notificationsSectionTitle": "Thông báo",
   "dailyNotificationsTitle": "Thông báo hàng ngày (7:00)",
+  "noficationGeneralTitle": "Thông báo chung",
   "notificationsOn": "Đang bật",
   "notificationsOff": "Đang tắt",
   "chooseLanguageModalTitle": "Chọn ngôn ngữ",
   "chooseThemeModalTitle": "Chọn chủ đề",
+
   "mapTabLabel": "Bản đồ",
   "stationListTabLabel": "Danh sách trạm đo",
   "settingsTabLabel": "Cài đặt",
+  "stationList": "Danh sách trạm đo",
+
   "aqiGood": "Tốt",
   "aqiModerate": "Trung bình",
   "aqiUnhealthyForSensitive": "Không lành mạnh cho nhóm nhạy cảm",
   "aqiUnhealthy": "Không lành mạnh",
   "aqiVeryUnhealthy": "Rất không lành mạnh",
   "aqiHazardous": "Nguy hiểm",
+
+  "aqiGoodMessage": "Chất lượng không khí tốt, an toàn cho sức khỏe",
+  "aqiModerateMessage": "Chất lượng không khí ở mức trung bình",
+  "aqiUnhealthyForSensitiveMessage": "Nhóm nhạy cảm có thể gặp vấn đề sức khỏe",
+  "aqiUnhealthyMessage": "Mọi người có thể gặp vấn đề sức khỏe",
+  "aqiVeryUnhealthyMessage": "Cảnh báo sức khỏe nghiêm trọng",
+  "aqiHazardousMessage": "Tình trạng khẩn cấp về sức khỏe",
+
+  "aqiMessageGood": "Chất lượng không khí tốt!",
+  "aqiMessageModerate": "Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận.",
+  "aqiMessageUnhealthyForSensitive": "Không tốt cho nhóm nhạy cảm. Hạn chế hoạt động ngoài trời!",
+  "aqiMessageUnhealthy": "Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời.",
+  "aqiMessageVeryUnhealthy": "Rất có hại cho sức khỏe. Mọi người nên ở trong nhà!",
+  "aqiMessageHazardous": "Nguy hiểm. Mọi người nên ở trong nhà và bật máy lọc không khí!",
+
+  "mainPollutantPM25": "Chất gây ô nhiễm chính: PM2.5",
+  "temperature": "Nhiệt độ",
+  "humidity": "Độ ẩm",
+
   "healthRecommendationsTitle": "Khuyến nghị về sức khoẻ",
+  "healthRecommendations": "Khuyến nghị sức khỏe",
+  "enjoyOutdoorActivities": "Tận hưởng các hoạt động ngoài trời",
+  "openWindowsForFreshAir": "Mở cửa sổ để đưa không khí sạch và trong lành vào nhà",
+  "sensitiveGroupsReduceOutdoorExercise": "Các nhóm nhạy cảm nên giảm tập thể dục ngoài trời",
+  "closeWindowsToAvoidPollution": "Đóng cửa sổ để tránh không khí bẩn bên ngoài",
+  "sensitiveGroupsWearMask": "Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài",
+  "sensitiveGroupsUseAirPurifier": "Các nhóm nhạy cảm nên khởi động máy lọc không khí",
+  "reduceOutdoorExercise": "Giảm vận động ngoài trời",
+  "runAirPurifier": "Chạy máy lọc không khí",
+  "avoidOutdoorExercise": "Tránh tập thể dục ngoài trời",
+  "wearMaskWhenOutside": "Đeo khẩu trang khi ra ngoài",
+
+  "healthRecommendationGoodOutdoor": "Tận hưởng các hoạt động ngoài trời",
+  "healthRecommendationGoodWindows": "Mở cửa sổ để đưa không khí sạch và trong lành vào nhà",
+  "healthRecommendationModerateOutdoor": "Các nhóm nhạy cảm nên giảm tập thể dục ngoài trời",
+  "healthRecommendationModerateWindows": "Đóng cửa sổ để tránh không khí bẩn bên ngoài",
+  "healthRecommendationModerateMask": "Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài",
+  "healthRecommendationModerateAirPurifier": "Các nhóm nhạy cảm nên khởi động máy lọc không khí",
+  "healthRecommendationUnhealthySensitiveOutdoor": "Giảm vận động ngoài trời",
+  "healthRecommendationUnhealthySensitiveWindows": "Đóng cửa sổ để tránh không khí bẩn bên ngoài",
+  "healthRecommendationUnhealthySensitiveMask": "Các nhóm nhạy cảm nên đeo khẩu trang khi ra ngoài",
+  "healthRecommendationUnhealthySensitiveAirPurifier": "Chạy máy lọc không khí",
+  "healthRecommendationUnhealthyOutdoor": "Tránh tập thể dục ngoài trời",
+  "healthRecommendationUnhealthyWindows": "Đóng cửa sổ để tránh không khí bẩn bên ngoài",
+  "healthRecommendationUnhealthyMask": "Đeo khẩu trang khi ra ngoài",
+  "healthRecommendationUnhealthyAirPurifier": "Chạy máy lọc không khí",
+  "healthRecommendationVeryUnhealthyOutdoor": "Tránh mọi hoạt động ngoài trời",
+  "healthRecommendationVeryUnhealthyWindows": "Đóng kín cửa sổ. Ở trong nhà.",
+  "healthRecommendationVeryUnhealthyMask": "Bắt buộc đeo khẩu trang chất lượng cao nếu phải ra ngoài",
+  "healthRecommendationVeryUnhealthyAirPurifier": "Chạy máy lọc không khí liên tục",
+  "healthRecommendationHazardousOutdoor": "Tránh tuyệt đối mọi hoạt động ngoài trời. Ở trong nhà.",
+  "healthRecommendationHazardousWindows": "Đóng kín tất cả cửa sổ. Không ra ngoài nếu không cần thiết.",
+  "healthRecommendationHazardousMask": "Bắt buộc đeo khẩu trang N95/FFP2 nếu phải ra ngoài.",
+  "healthRecommendationHazardousAirPurifier": "Chạy máy lọc không khí ở mức cao nhất.",
+
   "dataHistoryTitle": "Lịch sử dữ liệu",
+  "noHistoricalData": "Không có dữ liệu lịch sử.",
+  "errorLoadingHistoryData": "Lỗi tải dữ liệu lịch sử.",
+  "last24Hours": "24 giờ qua",
+  "last7Days": "7 ngày qua",
+  "noDataForTimeRange": "Không có dữ liệu cho khoảng thời gian này.",
   "noDataForPeriod": "Không có dữ liệu cho khoảng thời gian này.",
+  "hour": "Giờ",
+  "day": "Ngày",
+  "noDataToDisplay": "Không có dữ liệu để hiển thị.",
+  "average": "trung bình",
+
   "loadingData": "Đang tải dữ liệu...",
+  "loadingMapData": "Đang tải dữ liệu bản đồ...",
   "errorLoadingData": "Lỗi tải dữ liệu.",
+  "invalidDataFormat": "Dữ liệu Firebase không đúng định dạng.",
+  "dataProcessingError": "Lỗi xử lý dữ liệu",
+  "firebaseConnectionError": "Lỗi kết nối Firebase",
+  "connectingToDatabase": "Đang kết nối đến cơ sở dữ liệu...",
+  "error": "lỗi",
+  "noData": "không",
+  "noDeviceData": "Không có dữ liệu thiết bị nào.",
+  "noStationData": "Không có dữ liệu trạm nào.",
+  "noStationFound": "Không tìm thấy trạm nào cho",
+  "noStationsToDisplay": "Không có trạm nào để hiển thị.",
+
   "searchStationHint": "Tìm kiếm theo tên trạm...",
-  "appTitle": "Quan Trắc Không Khí",
+  "searchByStationName": "Tìm kiếm theo tên trạm...",
+
+  "unknownLocation": "Vị trí không xác định",
+  "location": "Vị trí",
+  "addressNotFound": "Không tìm thấy địa chỉ",
+  "errorGettingLocation": "Lỗi khi lấy tên địa điểm từ tọa độ",
+  "errorLocation": "Lỗi lấy vị trí",
+  "cannotLocate": "Không thể định vị",
+  "unknownLocationDefaultCoords": "Vị trí không xác định (tọa độ mặc định)",
+  "locationWithCoords": "Vị trí ({lat}, {long})",
+  "@locationWithCoords": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "long": {
+        "type": "String"
+      }
+    }
+  },
+  "addressNotFoundWithCoords": "Không tìm thấy địa chỉ ({lat}, {long})",
+  "@addressNotFoundWithCoords": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "long": {
+        "type": "String"
+      }
+    }
+  },
+  "errorGettingLocationFromCoords": "Lỗi khi lấy tên địa điểm từ tọa độ",
+  "errorLocationWithCoords": "Lỗi lấy vị trí ({lat}, {long})",
+  "@errorLocationWithCoords": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "long": {
+        "type": "String"
+      }
+    }
+  },
+
+  "locationServiceDisabled": "Dịch vụ vị trí bị tắt",
+  "locationPermissionDenied": "Quyền vị trí bị từ chối",
+  "locationPermissionDeniedForever": "Quyền vị trí bị từ chối vĩnh viễn",
+  "locationPermissionDeniedForeverMessage": "Quyền truy cập vị trí bị từ chối vĩnh viễn. Vui lòng mở cài đặt để cấp quyền.",
+
+  "markedDevicesOnMap": "Đã đánh dấu",
+  "devicesOnMap": "thiết bị trên bản đồ",
+
   "importantNotificationTitle": "Thông báo quan trọng",
   "notificationPermissionPrompt": "Bạn có muốn nhận thông báo hàng ngày về chất lượng không khí không? (Ví dụ: lúc 7:00 sáng)",
   "noThanksButton": "KHÔNG, CẢM ƠN",
-  "yesEnableButton": "CÓ, BẬT NGAY",
-  "noficationGeneralTitle": "Thông báo chung"
+  "yesEnableButton": "CÓ, BẬT NGAY"
 }
