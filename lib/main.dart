@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import 'screens/main_screen.dart';
-import 'firebase_options.dart'; // File này được tạo bởi FlutterFire CLI
+import 'services/locale_provider.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Sử dụng firebase_options.dart
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MyApp());
 }
@@ -14,16 +18,66 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quan Trắc Không Khí',
-      theme: ThemeData(
-        primarySwatch: Colors.teal, // Bạn có thể chọn màu chủ đạo khác
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        useMaterial3: true, // Nên dùng Material 3 cho các project mới
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+      ],
+      child: Consumer<LanguageProvider>(
+        builder: (context, languageProvider, child) {
+          return MaterialApp(
+            title: 'Quan Trắc Không Khí',
+
+            // Sử dụng locale từ LanguageProvider
+            locale: languageProvider.currentLocale,
+
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'), // English
+              Locale('vi'), // Vietnamese
+            ],
+
+            theme: ThemeData(
+              primarySwatch: Colors.teal,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+              useMaterial3: true,
+            ),
+            home: const AppInitializer(),
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
-      home: MainScreen(),
-      debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+// Widget để khởi tạo ngôn ngữ đã lưu
+class AppInitializer extends StatefulWidget {
+  const AppInitializer({Key? key}) : super(key: key);
+
+  @override
+  State<AppInitializer> createState() => _AppInitializerState();
+}
+
+class _AppInitializerState extends State<AppInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    // Load ngôn ngữ đã lưu
+    await Provider.of<LanguageProvider>(context, listen: false).loadSavedLanguage();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MainScreen();
   }
 }
 

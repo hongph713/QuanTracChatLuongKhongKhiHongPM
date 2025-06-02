@@ -66,10 +66,13 @@
 //
 
 // lib/screens/main_screen.dart
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'map_screen/station_list/station_list_screen.dart'; // Đường dẫn của bạn
 import 'map_screen/widgets/map_screen.dart';
 import 'settings_screen/settings_screen.dart'; // THÊM IMPORT NÀY
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Để sử dụng đa ng
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -94,23 +97,25 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
-            label: 'Bản đồ',
+            // label: 'Bản đồ',
+            label: l10n.mapTabLabel, // Sử dụng đa ngôn ngữ
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list_alt),
-            label: 'Danh sách trạm đo',
+            label: l10n.stationListTabLabel, // Sử dụng đa ngôn ngữ
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Cài đặt',
+            label: l10n.settingsTabLabel, // Sử dụng đa ngôn ngữ,
           ),
         ],
         currentIndex: _selectedIndex,

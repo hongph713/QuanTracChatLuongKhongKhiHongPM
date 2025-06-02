@@ -34,5 +34,6 @@
   "importantNotificationTitle": "Important Notification",
   "notificationPermissionPrompt": "Would you like to receive daily air quality notifications (e.g., at 7:00 AM)?",
   "noThanksButton": "NO, THANKS",
-  "yesEnableButton": "YES, ENABLE"
+  "yesEnableButton": "YES, ENABLE",
+  "noficationGeneralTitle": "General Notification"
 }

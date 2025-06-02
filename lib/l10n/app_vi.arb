@@ -34,5 +34,6 @@
   "importantNotificationTitle": "Thông báo quan trọng",
   "notificationPermissionPrompt": "Bạn có muốn nhận thông báo hàng ngày về chất lượng không khí không? (Ví dụ: lúc 7:00 sáng)",
   "noThanksButton": "KHÔNG, CẢM ƠN",
-  "yesEnableButton": "CÓ, BẬT NGAY"
+  "yesEnableButton": "CÓ, BẬT NGAY",
+  "noficationGeneralTitle": "Thông báo chung"
 }
