@@ -17,7 +17,9 @@ dependencies:
   firebase_core: ^2.32.0  # Luôn cần cho Firebase
   cloud_firestore: ^4.17.4 # Để lưu trữ và truy xuất dữ liệu trạm
   firebase_database: ^10.2.4
-
+  flutter_local_notifications: ^17.1.2 # Kiểm tra phiên bản mới nhất
+  workmanager: ^0.6.0 # Kiểm tra phiên bản mới nhất
+  http: ^1.2.1
   # Google Maps
   google_maps_flutter: ^2.7.0
   geolocator: ^9.0.2

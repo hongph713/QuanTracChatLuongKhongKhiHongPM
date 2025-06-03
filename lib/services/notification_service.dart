@@ -142,3 +142,143 @@
 //     await _notifications.cancel(0);
 //   }
 // }
+
+// lib/services/notification_service.dart
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:timezone/data/latest_all.dart' as tz; // Cần cho scheduled notifications với timezone
+// import 'package:timezone/timezone.dart' as tz; // Cần cho scheduled notifications với timezone
+
+class NotificationService {
+  // Tạo một instance của plugin thông báo
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  /// Khởi tạo cài đặt cho plugin thông báo.
+  /// Cần được gọi ở hàm main() của ứng dụng.
+  Future<void> initializeLocalNotifications() async {
+    // Cài đặt cho Android
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher'); // Sử dụng icon mặc định của app bạn
+
+    // Cài đặt cho iOS (bạn có thể cần cấu hình thêm quyền trong Info.plist)
+    const DarwinInitializationSettings initializationSettingsIOS =
+    DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      // onDidReceiveLocalNotification: onDidReceiveLocalNotification, // Callback cũ cho iOS < 10
+    );
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    // Khởi tạo plugin với các cài đặt trên
+    // và callback khi người dùng nhấn vào thông báo (khi app đang chạy hoặc ở background)
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse: onDidReceiveBackgroundNotificationResponse,
+    );
+
+    // (Tùy chọn) Cấu hình timezone nếu bạn dự định lên lịch thông báo chính xác theo timezone
+    // _configureLocalTimeZone();
+
+    // Xin quyền hiển thị thông báo trên Android 13+
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidImplementation?.requestNotificationsPermission();
+
+    // (Tùy chọn) Xin quyền cho phép thông báo chính xác (cần cho một số loại lịch trình)
+    // await androidImplementation?.requestExactAlarmsPermission();
+  }
+
+  // (Tùy chọn) Hàm cấu hình timezone
+  // Future<void> _configureLocalTimeZone() async {
+  //   tz.initializeTimeZones();
+  //   final String currentTimeZone = await FlutterNativeTimezone.getLocalTimezone();
+  //   tz.setLocalLocation(tz.getLocation(currentTimeZone));
+  // }
+
+  /// Hiển thị một thông báo AQI.
+  ///
+  /// [aqi]: Chỉ số AQI.
+  /// [stationName]: Tên của trạm đo.
+  /// [aqiDescription]: Mô tả về mức độ AQI.
+  Future<void> showAqiNotification(int aqi, String stationName, String aqiDescription) async {
+    // Định nghĩa chi tiết cho thông báo trên Android
+    const AndroidNotificationDetails androidNotificationDetails =
+    AndroidNotificationDetails(
+      'daily_aqi_channel_id_001', // ID của kênh thông báo (quan trọng)
+      'Thông báo AQI Hàng Ngày', // Tên của kênh (hiển thị trong cài đặt app)
+      channelDescription: 'Kênh này dùng để gửi thông báo về chỉ số AQI hàng ngày.', // Mô tả kênh
+      importance: Importance.max, // Mức độ ưu tiên cao nhất
+      priority: Priority.high,    // Ưu tiên cao
+      icon: '@mipmap/ic_launcher', // Icon nhỏ cho thông báo (tùy chọn, có thể là null)
+      // sound: RawResourceAndroidNotificationSound('notification_sound'), // Nếu có âm thanh tùy chỉnh
+      // largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'), // Icon lớn (tùy chọn)
+      ticker: 'AQI Alert', // Text hiển thị trên thanh trạng thái khi thông báo đến (ít dùng)
+    );
+
+    // Định nghĩa chi tiết cho thông báo trên iOS
+    const DarwinNotificationDetails darwinNotificationDetails =
+    DarwinNotificationDetails(
+      // sound: 'default', // Âm thanh mặc định
+      // badgeNumber: 1, // Số hiển thị trên icon app (tùy chọn)
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    // Tổng hợp chi tiết thông báo cho các nền tảng
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: darwinNotificationDetails,
+    );
+
+    // Nội dung thông báo
+    String title = 'Cập nhật Chất lượng Không khí';
+    String body = 'Trạm $stationName: AQI $aqi - $aqiDescription.';
+
+    // Hiển thị thông báo
+    await flutterLocalNotificationsPlugin.show(
+      0, // ID của thông báo (nếu gửi nhiều thông báo, ID này nên khác nhau hoặc =0 để ghi đè)
+      title,
+      body,
+      notificationDetails,
+      payload: 'payload_data_khi_click_noti_station_${stationName.replaceAll(" ", "_")}', // Dữ liệu tùy chọn khi người dùng nhấn vào thông báo
+    );
+    print("[NotificationService] Đã yêu cầu hiển thị thông báo cho trạm $stationName.");
+  }
+}
+
+// Callback khi người dùng nhấn vào thông báo (khi app đang ở foreground/background nhưng không terminated)
+// Hàm này phải được khai báo ở top-level hoặc là một static method.
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) {
+  final String? payload = notificationResponse.payload;
+  if (payload != null) {
+    print('[NotificationService] Foreground/Background CLICK. Payload: $payload');
+    // Xử lý payload, ví dụ điều hướng đến màn hình chi tiết của trạm
+    // MyApp.navigatorKey.currentState?.pushNamed('/stationDetail', arguments: payload);
+  }
+  // ... xử lý hành động khác ...
+}
+
+// Callback khi người dùng nhấn vào thông báo (khi app bị terminated và được mở lại từ thông báo)
+// Hàm này phải được khai báo ở top-level hoặc là một static method và được đánh dấu @pragma('vm:entry-point').
+@pragma('vm:entry-point')
+void onDidReceiveBackgroundNotificationResponse(NotificationResponse notificationResponse) {
+  final String? payload = notificationResponse.payload;
+  print('[NotificationService] Terminated CLICK. Payload: $payload');
+  // Xử lý payload
+  // Lưu ý: Ở đây bạn không thể thực hiện các tác vụ UI phức tạp trực tiếp.
+  // Có thể lưu payload vào SharedPreferences để xử lý khi app khởi động hoàn toàn.
+}
+
+// // Callback cho iOS < 10 (ít dùng)
+// void onDidReceiveLocalNotification(int id, String? title, String? body, String? payload) async {
+//   // Xử lý thông báo
+//   print('[NotificationService] iOS < 10 onDidReceiveLocalNotification. Payload: $payload');
+// }

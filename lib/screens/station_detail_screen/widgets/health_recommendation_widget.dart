@@ -157,17 +157,17 @@ class HealthRecommendationWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Row(
-                children: [
-                  Icon(Icons.health_and_safety, color: iconColor, size: 24.0),
-                  const SizedBox(width: 8.0),
-                  Text(
-                    l10n.healthRecommendations ?? 'Khuyến nghị sức khỏe',
-                    style: const TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold
-                    ),
-                  ),
-                ],
+                // children: [
+                //   Icon(Icons.health_and_safety, color: iconColor, size: 24.0),
+                //   const SizedBox(width: 8.0),
+                //   Text(
+                //     l10n.healthRecommendations ?? 'Khuyến nghị sức khỏe',
+                //     style: const TextStyle(
+                //         fontSize: 18.0,
+                //         fontWeight: FontWeight.bold
+                //     ),
+                //   ),
+                // ],
               ),
             ),
             ...recommendations.map((rec) {

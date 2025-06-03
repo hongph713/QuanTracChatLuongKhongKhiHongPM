@@ -79,7 +79,7 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
     try {
       // SỬA ĐƯỜNG DẪN Ở ĐÂY: Thêm '/data_points'
       final historyRef = FirebaseDatabase.instance
-          .ref('cacThietBiQuanTrac/${widget.stationId}/data_points');
+          .ref('cacThietBiQuanTrac/${widget.stationId}');
 
       DateTime now = DateTime.now();
       DateTime startTimeFilter;

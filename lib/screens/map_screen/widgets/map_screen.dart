@@ -188,13 +188,13 @@ class _MapScreenState extends State<MapScreen> {
                   setState(() {
                     _selectedStation = station;
                   });
-                  // Điều hướng đến màn hình chi tiết
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StationDetailScreen(station: station),
-                    ),
-                  );
+                  // // Điều hướng đến màn hình chi tiết
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => StationDetailScreen(station: station),
+                  //   ),
+                  // );
                 },
               );
 
