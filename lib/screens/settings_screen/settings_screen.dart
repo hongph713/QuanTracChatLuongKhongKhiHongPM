@@ -1304,37 +1304,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-          elevation: 1,
-          title: Text(
-            l10n?.settingsTitle ?? 'Cài đặt',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
+      body: SafeArea( // Thêm SafeArea để bọc SingleChildScrollView
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle(l10n?.interfaceSectionTitle ?? 'Giao diện'),
+              const SizedBox(height: 12),
+              _buildLanguageItem(),
+              const SizedBox(height: 12),
+              _buildThemeItem(),
+
+              const SizedBox(height: 32),
+
+              _buildSectionTitle(l10n?.notificationsSectionTitle ?? 'Thông báo'),
+              const SizedBox(height: 12),
+              _buildNotificationItem(), // << Sẽ sử dụng _dailyAqiNotificationEnabled
+            ],
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new),
-            onPressed: () => Navigator.of(context).pop(),
-          )
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle(l10n?.interfaceSectionTitle ?? 'Giao diện'),
-            const SizedBox(height: 12),
-            _buildLanguageItem(),
-            const SizedBox(height: 12),
-            _buildThemeItem(),
-
-            const SizedBox(height: 32),
-
-            _buildSectionTitle(l10n?.notificationsSectionTitle ?? 'Thông báo'),
-            const SizedBox(height: 12),
-            _buildNotificationItem(), // << Sẽ sử dụng _dailyAqiNotificationEnabled
-          ],
         ),
       ),
     );

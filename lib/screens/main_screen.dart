@@ -119,7 +119,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColor, // Hoặc màu bạn muốn
+        //selectedItemColor: Theme.of(context).primaryColor, // Hoặc màu bạn muốn
         onTap: _onItemTapped,
       ),
     );

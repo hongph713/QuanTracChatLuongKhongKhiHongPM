@@ -203,15 +203,14 @@ class _StationListScreenState extends State<StationListScreen> {
     print("[StationListScreen] build called. Loading: $_isLoading, Status: '$_statusMessage', AllStations: ${_allStations.length}, FilteredStations: ${_filteredStations.length}");
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n?.stationList ?? 'Danh sách trạm đo'),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          Expanded(child: _buildStationList()),
-        ],
+      // Bọc nội dung body bằng SafeArea
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            Expanded(child: _buildStationList()),
+          ],
+        ),
       ),
     );
   }
