@@ -1,7 +1,9 @@
 package com.example.datn_20242
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity: FlutterFragmentActivity() {
+    // Để trống cũng được
+}
 
 
