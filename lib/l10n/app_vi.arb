@@ -13,7 +13,7 @@
   "darkTheme": "Tối",
   "systemTheme": "Theo hệ thống",
   "notificationsSectionTitle": "Thông báo",
-  "dailyNotificationsTitle": "Thông báo hàng ngày (7:00)",
+  "dailyNotificationsTitle": "Thông báo hàng ngày",
   "noficationGeneralTitle": "Thông báo chung",
   "notificationsOn": "Đang bật",
   "notificationsOff": "Đang tắt",
@@ -40,9 +40,9 @@
   "aqiHazardousMessage": "Tình trạng khẩn cấp về sức khỏe",
 
   "aqiMessageGood": "Chất lượng không khí tốt!",
-  "aqiMessageModerate": "Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận.",
+  "aqiMessageModerate": "Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận!",
   "aqiMessageUnhealthyForSensitive": "Không tốt cho nhóm nhạy cảm. Hạn chế hoạt động ngoài trời!",
-  "aqiMessageUnhealthy": "Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời.",
+  "aqiMessageUnhealthy": "Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời!",
   "aqiMessageVeryUnhealthy": "Rất có hại cho sức khỏe. Mọi người nên ở trong nhà!",
   "aqiMessageHazardous": "Nguy hiểm. Mọi người nên ở trong nhà và bật máy lọc không khí!",
 

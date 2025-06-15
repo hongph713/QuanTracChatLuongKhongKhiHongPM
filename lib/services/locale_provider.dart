@@ -1,34 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LanguageProvider with ChangeNotifier {
-  Locale _currentLocale = const Locale('vi'); // Mặc định là tiếng Việt
+class LanguageProvider extends ChangeNotifier {
+  // Key để lưu trữ lựa chọn ngôn ngữ
+  static const String _languagePrefKey = 'language_code_preference';
+
+  Locale _currentLocale = const Locale('vi'); // Mặc định là Tiếng Việt
 
   Locale get currentLocale => _currentLocale;
 
-// Khởi tạo và load ngôn ngữ đã lưu
+  LanguageProvider() {
+    loadSavedLanguage();
+  }
+
+  bool isCurrentLanguage(String languageCode) {
+    return _currentLocale.languageCode == languageCode;
+  }
+
   Future<void> loadSavedLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedLanguageCode = prefs.getString('language_code') ?? 'vi';
-    _currentLocale = Locale(savedLanguageCode);
+    final languageCode = prefs.getString(_languagePrefKey) ?? 'vi';
+    _currentLocale = Locale(languageCode);
     notifyListeners();
   }
 
-// Thay đổi ngôn ngữ
   Future<void> changeLanguage(String languageCode) async {
-    if (_currentLocale.languageCode != languageCode) {
-      _currentLocale = Locale(languageCode);
+    _currentLocale = Locale(languageCode);
 
-      // Lưu vào SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('language_code', languageCode);
+    // <<< THÊM VÀO: LƯU LỰA CHỌN NGÔN NGỮ >>>
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_languagePrefKey, languageCode);
 
-      notifyListeners();
-    }
-  }
-
-// Kiểm tra xem có phải ngôn ngữ hiện tại không
-  bool isCurrentLanguage(String languageCode) {
-    return _currentLocale.languageCode == languageCode;
+    notifyListeners();
+    print("[LanguageProvider] Đã đổi ngôn ngữ sang '$languageCode' và lưu lại.");
   }
 }

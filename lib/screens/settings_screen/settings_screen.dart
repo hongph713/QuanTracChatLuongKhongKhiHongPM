@@ -1218,7 +1218,8 @@ import 'package:datn_20242/services/theme_provider.dart';
 // Đường dẫn này có thể cần điều chỉnh tùy thuộc vào vị trí file main.dart của bạn
 // Nếu settings_screen.dart nằm trong lib/screens/settings_screen/
 // và main.dart nằm trong lib/ thì đường dẫn có thể là:
-import '../../main.dart'; // << 2. IMPORT ĐỂ TRUY CẬP backgroundTaskService
+import '../../main.dart';
+import '../../services/background_service.dart'; // << 2. IMPORT ĐỂ TRUY CẬP backgroundTaskService
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -1229,8 +1230,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   // bool notificationsEnabled = true; // Sẽ thay thế bằng _dailyAqiNotificationEnabled từ SharedPreferences
-  bool _dailyAqiNotificationEnabled = false; // Giá trị khởi tạo, sẽ được load từ SharedPreferences
-  final String _notificationPrefKey = 'daily_aqi_notification_enabled_pref'; // Key cho SharedPreferences
+  bool _periodicNotificationEnabled = false;
+  final String _notificationPrefKey = 'inexact_periodic_notification_enabled';
 
   final List<Map<String, String>> languages = [
     {'code': 'vi', 'name': 'Tiếng Việt', 'flag': '🇻🇳'},
@@ -1253,40 +1254,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadNotificationSetting() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _dailyAqiNotificationEnabled = prefs.getBool(_notificationPrefKey) ?? false; // Mặc định là false nếu chưa có
+      _periodicNotificationEnabled = prefs.getBool(_notificationPrefKey) ?? false; // Mặc định là false nếu chưa có
     });
-    print("[SettingsScreen] Trạng thái thông báo đã tải: $_dailyAqiNotificationEnabled");
+    print("[SettingsScreen] Trạng thái thông báo đã tải: $_periodicNotificationEnabled");
   }
 
   // << 5. HÀM CẬP NHẬT VÀ LƯU TRẠNG THÁI THÔNG BÁO
-  Future<void> _updateAndPersistNotificationSetting(bool enabled) async {
+  Future<void> _updatePeriodicNotificationSetting(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_notificationPrefKey, enabled);
-    setState(() {
-      _dailyAqiNotificationEnabled = enabled;
-    });
-    print("[SettingsScreen] Trạng thái thông báo đã cập nhật và lưu: $enabled");
+    if (mounted) {
+      setState(() {
+        _periodicNotificationEnabled = enabled;
+      });
+    }
 
-    // Gọi service để lên lịch hoặc hủy thông báo
     if (enabled) {
-      backgroundTaskService.scheduleDaily7AmNotification(); // Sử dụng instance từ main.dart
+      // Gọi hàm cho thông báo không chính xác
+      backgroundTaskService.registerInexactPeriodicTask();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã BẬT thông báo AQI hàng ngày lúc 7h sáng.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //     content: Text('Đã BẬT thông báo AQI định kỳ.'),
+        //     backgroundColor: Colors.green,
+        //   ),
+        // );
       }
     } else {
-      backgroundTaskService.cancelDailyNotifications(); // Sử dụng instance từ main.dart
+      // Hủy tác vụ bằng tên unique của nó
+      backgroundTaskService.cancelTask(inexactPeriodicTask);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã TẮT thông báo AQI hàng ngày.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //     content: Text('Đã TẮT thông báo AQI định kỳ.'),
+        //     backgroundColor: Colors.orange,
+        //   ),
+        // );
       }
     }
   }
@@ -1446,6 +1449,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
+        // <<< THÊM VÀO: Hiệu ứng đổ bóng cho thẻ nổi >>>
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).shadowColor.withOpacity(0.05),
@@ -1457,6 +1461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Row(
         children: [
+          // <<< THÊM VÀO: Icon ở bên trái, giống các widget khác >>>
           Container(
             width: 40,
             height: 40,
@@ -1476,11 +1481,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n?.dailyNotificationsTitle ?? 'Thông báo hàng ngày (7:00)',
+                  l10n?.dailyNotificationsTitle ?? 'Thông báo hàng ngày',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 Text(
-                  _dailyAqiNotificationEnabled // Sử dụng state đã load
+                  _periodicNotificationEnabled
                       ? (l10n?.notificationsOn ?? 'Đang bật')
                       : (l10n?.notificationsOff ?? 'Đang tắt'),
                   style: Theme.of(context).textTheme.bodySmall,
@@ -1488,8 +1493,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _buildToggleSwitch(), // Toggle switch sẽ gọi _updateAndPersistNotificationSetting
+          _buildToggleSwitch(), // Nút gạt bật/tắt
         ],
+      ),
+    );
+  }
+
+  Widget _buildToggleSwitch() {
+    return GestureDetector(
+      onTap: () {
+        // Khi bấm vào, gọi đến hàm xử lý logic ở Phần 3
+        _updatePeriodicNotificationSetting(!_periodicNotificationEnabled);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 48,
+        height: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: _periodicNotificationEnabled ? Theme.of(context).colorScheme.primary : Colors.grey[400],
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          alignment: _periodicNotificationEnabled
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
+          child: Container(
+            width: 20,
+            height: 20,
+            margin: const EdgeInsets.all(2),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1551,40 +1589,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             trailing,
           ],
-        ),
-      ),
-    );
-  }
-
-  // << 7. CẬP NHẬT _buildToggleSwitch ĐỂ GỌI HÀM LƯU TRẠNG THÁI VÀ LÊN LỊCH/HỦY
-  Widget _buildToggleSwitch() {
-    return GestureDetector(
-      onTap: () {
-        // Gọi hàm cập nhật, hàm này đã bao gồm setState và gọi service
-        _updateAndPersistNotificationSetting(!_dailyAqiNotificationEnabled);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 48,
-        height: 24,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: _dailyAqiNotificationEnabled ? Theme.of(context).primaryColor : Colors.grey[400],
-        ),
-        child: AnimatedAlign(
-          duration: const Duration(milliseconds: 200),
-          alignment: _dailyAqiNotificationEnabled
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
-          child: Container(
-            width: 20,
-            height: 20,
-            margin: const EdgeInsets.all(2),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-          ),
         ),
       ),
     );
@@ -1657,17 +1661,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             await languageProvider.changeLanguage(language['code']!);
             if (mounted) {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      language['code'] == 'vi'
-                          ? 'Đã chuyển sang Tiếng Việt'
-                          : 'Changed to English'
-                  ),
-                  duration: const Duration(seconds: 2),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //     content: Text(
+              //         language['code'] == 'vi'
+              //             ? 'Đã chuyển sang Tiếng Việt'
+              //             : 'Changed to English'
+              //     ),
+              //     duration: const Duration(seconds: 2),
+              //     backgroundColor: Colors.green,
+              //   ),
+              // );
             }
           },
           child: Container(
@@ -1830,3 +1834,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 }
+

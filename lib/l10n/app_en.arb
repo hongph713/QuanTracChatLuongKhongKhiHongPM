@@ -13,7 +13,7 @@
   "darkTheme": "Dark",
   "systemTheme": "System",
   "notificationsSectionTitle": "Notifications",
-  "dailyNotificationsTitle": "Daily notifications (7:00 AM)",
+  "dailyNotificationsTitle": "Daily notifications",
   "noficationGeneralTitle": "General Notifications",
   "notificationsOn": "On",
   "notificationsOff": "Off",
@@ -40,9 +40,9 @@
   "aqiHazardousMessage": "Health emergency situation",
 
   "aqiMessageGood": "Air quality is good!",
-  "aqiMessageModerate": "Air quality is moderate. Sensitive groups should be cautious.",
+  "aqiMessageModerate": "Air quality is moderate. Sensitive groups should be cautious!",
   "aqiMessageUnhealthyForSensitive": "Unhealthy for sensitive groups. Limit outdoor activities!",
-  "aqiMessageUnhealthy": "Harmful to health. Everyone should limit outdoor activities.",
+  "aqiMessageUnhealthy": "Harmful to health. Everyone should limit outdoor activities!",
   "aqiMessageVeryUnhealthy": "Very harmful to health. Everyone should stay indoors!",
   "aqiMessageHazardous": "Hazardous. Everyone should stay indoors and turn on air purifiers!",
 

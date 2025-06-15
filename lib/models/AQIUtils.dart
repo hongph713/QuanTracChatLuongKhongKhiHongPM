@@ -51,19 +51,19 @@ class AQIUtils {
 
 // Lấy màu dựa trên chỉ số AQI
   static Color getAQIColor(int aqi) {
-    if (aqi <= 50) return Colors.green;
-    if (aqi <= 100) return const Color(0xFFFFEB3B);
-    if (aqi <= 150) return Colors.orange;
-    if (aqi <= 200) return Colors.red;
-    if (aqi <= 300) return Colors.purple;
-    return const Color(0xFF8B4513); // Màu nâu (SaddleBrown)
+    if (aqi <= 50) return Color(0xFF9CCC65);
+    if (aqi <= 100) return Color(0xFFFFCA28);
+    if (aqi <= 150) return Color(0xFFFF9843);
+    if (aqi <= 200) return Color(0xFFEF5350);
+    if (aqi <= 300) return Color(0xFFAB47BC);
+    return Color(0xFF885A6C); // Màu nâu (SaddleBrown)
   }
 
   static Color getAQIColorBgr(int aqi) {
     if (aqi <= 50) return const Color(0xFFF0FFF0);
     if (aqi <= 100) return const Color(0xFFFFFFF0);
     if (aqi <= 150) return const Color(0xFFFFF7F0);
-    if (aqi <= 200) return const Color(0xFFFFFAFA);
+    if (aqi <= 200) return const Color(0xFFFEF2F2);
     if (aqi <= 300) return const Color(0xFFF5F0FA);
     return const Color(0xFFF9F5F2); // Màu nâu (SaddleBrown)
   }
@@ -101,13 +101,31 @@ class AQIUtils {
       return l10n.aqiMessageHazardous;
     } else {
       // Fallback cho trường hợp không có localization
-      if (aqi <= 50) return 'Chất lượng không khí tốt!';
-      if (aqi <= 100) return 'Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận.';
+      if (aqi <= 50) return 'Chất lượng không khí hôm nay tốt!';
+      if (aqi <= 100) return 'Chất lượng không khí trung bình. Nhóm nhạy cảm nên cẩn thận!';
       if (aqi <= 150) return 'Không tốt cho nhóm nhạy cảm. Hạn chế hoạt động ngoài trời!';
-      if (aqi <= 200) return 'Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời.';
+      if (aqi <= 200) return 'Có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời!';
       if (aqi <= 300) return 'Rất có hại cho sức khỏe. Mọi người nên ở trong nhà!';
       return 'Nguy hiểm. Mọi người nên ở trong nhà và bật máy lọc không khí!';
     }
+  }
+
+  static String getAQINoti(int aqi, {String lang = 'vi'}) {
+    if (lang == 'en') {
+      if (aqi <= 50) return "Today's air quality is good. Enjoy your outdoor activities!";
+      if (aqi <= 100) return "Today's air quality is moderate. Sensitive groups should reduce outdoor activities!";
+      if (aqi <= 150) return "Today's air quality is unhealthy for sensitive groups. Limit outdoor activities!";
+      if (aqi <= 200) return "Today's air quality is unhealthy. Everyone should limit outdoor activities!";
+      if (aqi <= 300) return "Today's air quality is very unhealthy. Everyone should stay indoors!";
+      return "Today's air quality is hazardous. Everyone should stay indoors and turn on an air purifier!";
+    }
+    // Mặc định là Tiếng Việt
+    if (aqi <= 50) return 'Chất lượng không khí hôm nay tốt.Hãy tận hưởng các hoạt động ngoài trời!';
+    if (aqi <= 100) return 'Chất lượng không khí hôm nay trung bình. Các nhóm nhạy cảm nên giảm hoạt động ngoài trời!';
+    if (aqi <= 150) return 'Chất lượng không khí hôm nay không tốt cho nhóm nhạy cảm. Hạn chế hoạt  ngoài trời!';
+    if (aqi <= 200) return 'Chất lượng không khí hôm nay có hại cho sức khỏe. Mọi người nên hạn chế hoạt động ngoài trời!';
+    if (aqi <= 300) return 'Chất lượng không khí hôm nay rất có hại cho sức khỏe. Mọi người nên ở trong nhà!';
+    return 'Chất lượng không khí hôm nay cực kỳ có hại. Mọi người nên ở trong nhà và bật máy lọc không khí!';
   }
 
 // HÀM ĐƯỢC THÊM LẠI để tương thích với StationInfoCard hiện tại
@@ -235,12 +253,12 @@ class AQIUtils {
 
 // Chuyển đổi Color sang giá trị Hue cho BitmapDescriptor
   static double _getHueFromColor(Color color) {
-    if (color == Colors.green) return BitmapDescriptor.hueGreen;
-    if (color == const Color(0xFFFFEB3B)) return BitmapDescriptor.hueYellow;
-    if (color == Colors.orange) return BitmapDescriptor.hueOrange;
-    if (color == Colors.red) return BitmapDescriptor.hueRed;
-    if (color == Colors.purple) return BitmapDescriptor.hueViolet;
-    if (color == const Color(0xFF8B4513)) return BitmapDescriptor.hueRose;
+    if (color == Color(0xFF9CCC65)) return BitmapDescriptor.hueGreen;
+    if (color == Color(0xFFFFCA28)) return BitmapDescriptor.hueYellow;
+    if (color == Color(0xFFFF9843)) return BitmapDescriptor.hueOrange;
+    if (color == Color(0xFFEF5350)) return BitmapDescriptor.hueRed;
+    if (color == Color(0xFFAB47BC)) return BitmapDescriptor.hueViolet;
+    if (color == Color(0xFF885A6C)) return BitmapDescriptor.hueRose;
     return BitmapDescriptor.hueRed; // Mặc định
   }
 }

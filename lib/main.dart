@@ -368,174 +368,17 @@
 //   }
 // }
 
-// lib/main.dart
-// import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-// import 'package:provider/provider.dart';
-//
-// import 'screens/main_screen.dart';
-// import 'services/locale_provider.dart';
-// import 'services/theme_provider.dart';
-// import 'services/notification_service.dart';
-// import 'services/background_service.dart';
-// import 'firebase_options.dart';
-//
-// // Khởi tạo các service
-// final NotificationService notificationService = NotificationService();
-// final BackgroundTaskService backgroundTaskService = BackgroundTaskService();
-//
-// void main() async {
-//   // Đảm bảo Flutter bindings đã được khởi tạo
-//   WidgetsFlutterBinding.ensureInitialized();
-//
-//   // Khởi tạo Firebase
-//   await Firebase.initializeApp(
-//     options: DefaultFirebaseOptions.currentPlatform,
-//   );
-//   print("[main.dart] Firebase initialized.");
-//
-//   // Khởi tạo Notification Service
-//   await notificationService.initializeLocalNotifications();
-//   print("[main.dart] NotificationService initialized for main isolate.");
-//
-//   // Khởi tạo Background Task Service
-//   await backgroundTaskService.initializeWorkManager();
-//   print("[main.dart] BackgroundTaskService (WorkManager) initialized.");
-//
-//   runApp(MyApp());
-// }
-//
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MultiProvider(
-//       providers: [
-//         ChangeNotifierProvider(create: (_) => LanguageProvider()),
-//         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-//       ],
-//       child: Consumer2<LanguageProvider, ThemeProvider>(
-//         builder: (context, languageProvider, themeProvider, child) {
-//           return MaterialApp(
-//             title: 'Quan Trắc Không Khí',
-//             locale: languageProvider.currentLocale,
-//             localizationsDelegates: const [
-//               AppLocalizations.delegate,
-//               GlobalMaterialLocalizations.delegate,
-//               GlobalWidgetsLocalizations.delegate,
-//               GlobalCupertinoLocalizations.delegate,
-//             ],
-//             supportedLocales: const [
-//               Locale('en'), // English
-//               Locale('vi'), // Vietnamese
-//             ],
-//
-//             // --- CẬP NHẬT THEME ---
-//
-//             // Theme sáng: Tùy chỉnh để có giao diện nhất quán
-//             theme: ThemeData(
-//               brightness: Brightness.light,
-//               primarySwatch: Colors.blue,
-//               visualDensity: VisualDensity.adaptivePlatformDensity,
-//               useMaterial3: true,
-//               scaffoldBackgroundColor: Colors.grey[50], // Màu nền xám rất nhạt
-//               cardColor: Colors.white, // Màu thẻ là màu trắng
-//               appBarTheme: AppBarTheme(
-//                 backgroundColor: Colors.white,
-//                 foregroundColor: Colors.blueGrey, // Màu chữ và icon trên AppBar
-//                 elevation: 1,
-//               ),
-//               colorScheme: ColorScheme.light(
-//                 primary: Colors.blue,
-//                 secondary: Colors.amber,
-//                 surface: Colors.white, // Màu bề mặt (card)
-//                 background: Colors.grey[50]!, // Màu nền
-//               ),
-//             ),
-//
-//             // Theme tối: Tùy chỉnh với nền xám đậm để dễ nhìn
-//             darkTheme: ThemeData(
-//               brightness: Brightness.dark,
-//               primarySwatch: Colors.blue,
-//               visualDensity: VisualDensity.adaptivePlatformDensity,
-//               useMaterial3: true,
-//               scaffoldBackgroundColor: const Color(0xFF121212), // Nền xám tối (tiêu chuẩn Material)
-//               cardColor: const Color(0xFF1E1E1E), // Thẻ màu xám đậm hơn
-//               dividerColor: Colors.white.withOpacity(0.15),
-//               appBarTheme: const AppBarTheme(
-//                 backgroundColor: Color(0xFF1E1E1E), // AppBar cùng màu thẻ
-//                 elevation: 1,
-//               ),
-//               colorScheme: ColorScheme.dark(
-//                 primary: Colors.blueGrey,      // Màu chính cho các thành phần tương tác
-//                 secondary: Colors.amberAccent,   // Màu phụ
-//                 background: const Color(0xFF121212),
-//                 surface: const Color(0xFF1E1E1E),
-//                 onPrimary: Colors.black,
-//                 onBackground: Colors.white,
-//                 onSurface: Colors.white,
-//               ),
-//             ),
-//
-//             // --- KẾT THÚC CẬP NHẬT THEME ---
-//
-//             themeMode: themeProvider.currentThemeMode,
-//             home: const AppInitializer(),
-//             debugShowCheckedModeBanner: false,
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
-//
-// // Widget AppInitializer của bạn giữ nguyên, không có lỗi.
-// class AppInitializer extends StatefulWidget {
-//   const AppInitializer({Key? key}) : super(key: key);
-//
-//   @override
-//   State<AppInitializer> createState() => _AppInitializerState();
-// }
-//
-// class _AppInitializerState extends State<AppInitializer> {
-//   bool _isInitialized = false;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initializeApp();
-//   }
-//
-//   Future<void> _initializeApp() async {
-//     await Provider.of<LanguageProvider>(context, listen: false).loadSavedLanguage();
-//
-//     if (mounted) {
-//       setState(() {
-//         _isInitialized = true;
-//       });
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     if (_isInitialized) {
-//       return MainScreen();
-//     } else {
-//       return const Scaffold(
-//         body: Center(
-//           child: CircularProgressIndicator(),
-//         ),
-//       );
-//     }
-//   }
-// }
-
+// // lib/main.dart
+import 'package:datn_20242/screens/map_screen/widgets/map_screen.dart';
+import 'package:datn_20242/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'screens/main_screen.dart';
 import 'services/locale_provider.dart';
@@ -548,22 +391,31 @@ import 'firebase_options.dart';
 final NotificationService notificationService = NotificationService();
 final BackgroundTaskService backgroundTaskService = BackgroundTaskService();
 
-void main() async {
-  // Đảm bảo Flutter bindings đã được khởi tạo
-  WidgetsFlutterBinding.ensureInitialized();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  // Khởi tạo Firebase
+void onNotificationTap(NotificationResponse notificationResponse) {
+  final String? payload = notificationResponse.payload;
+  if (payload != null && payload.isNotEmpty) {
+    print("Thông báo được bấm với payload (stationId): $payload");
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (context) => MapScreen(highlightedStationId: payload),
+      ),
+    );
+  }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   print("[main.dart] Firebase initialized.");
 
-  // Khởi tạo Notification Service
-  await notificationService.initializeLocalNotifications();
-  print("[main.dart] NotificationService initialized for main isolate.");
+  await notificationService.initialize(onDidReceiveNotificationResponse: onNotificationTap);
+  print("[main.dart] NotificationService initialized.");
 
-  // Khởi tạo Background Task Service
-  await backgroundTaskService.initializeWorkManager();
+  await backgroundTaskService.initialize();
   print("[main.dart] BackgroundTaskService (WorkManager) initialized.");
 
   runApp(MyApp());
@@ -580,6 +432,7 @@ class MyApp extends StatelessWidget {
       child: Consumer2<LanguageProvider, ThemeProvider>(
         builder: (context, languageProvider, themeProvider, child) {
           return MaterialApp(
+            navigatorKey: navigatorKey,
             title: 'Quan Trắc Không Khí',
             locale: languageProvider.currentLocale,
             localizationsDelegates: const [
@@ -592,7 +445,6 @@ class MyApp extends StatelessWidget {
               Locale('en'), // English
               Locale('vi'), // Vietnamese
             ],
-
             // --- Theme Sáng ---
             theme: ThemeData(
               brightness: Brightness.light,
@@ -607,12 +459,11 @@ class MyApp extends StatelessWidget {
                 elevation: 1,
               ),
               colorScheme: ColorScheme.light(
-                primary: Colors.blue[800]!, // Màu chính
-                secondary: Colors.blueGrey!, // Màu phụ
+                primary: Colors.blue[800]!,
+                secondary: Colors.blueGrey,
                 surface: Colors.white,
                 background: Colors.grey[50]!,
               ),
-              // << THÊM LẠI THEME CHO THANH ĐIỀU HƯỚNG SÁNG >>
               navigationBarTheme: NavigationBarThemeData(
                 indicatorColor: Colors.blue.withOpacity(0.15),
                 iconTheme: MaterialStateProperty.resolveWith<IconThemeData?>((states) {
@@ -629,7 +480,6 @@ class MyApp extends StatelessWidget {
                 }),
               ),
             ),
-
             // --- Theme Tối ---
             darkTheme: ThemeData(
               brightness: Brightness.dark,
@@ -643,23 +493,22 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Color(0xFF1E1E1E),
                 elevation: 1,
               ),
-              colorScheme: ColorScheme.dark(
-                primary: Colors.blueGrey, // << SỬA LẠI MÀU PRIMARY CHO NHẤT QUÁN
-                secondary: Colors.blueGrey, // Màu phụ
-                background: const Color(0xFF121212),
-                surface: const Color(0xFF1E1E1E),
+              colorScheme: const ColorScheme.dark(
+                primary: Colors.blueGrey,
+                secondary: Colors.blueGrey,
+                background: Color(0xFF121212),
+                surface: Color(0xFF1E1E1E),
                 onPrimary: Colors.black,
                 onBackground: Colors.white,
                 onSurface: Colors.white,
               ),
-              // << THÊM LẠI THEME CHO THANH ĐIỀU HƯỚNG TỐI >>
               navigationBarTheme: NavigationBarThemeData(
                 indicatorColor: Colors.lightBlueAccent.withOpacity(0.2),
                 iconTheme: MaterialStateProperty.resolveWith<IconThemeData?>((states) {
                   if (states.contains(MaterialState.selected)) {
-                    return const IconThemeData(color: Colors.blueGrey); // Màu khi được chọn
+                    return const IconThemeData(color: Colors.blueGrey);
                   }
-                  return IconThemeData(color: Colors.grey[400]); // Màu khi không được chọn
+                  return IconThemeData(color: Colors.grey[400]);
                 }),
                 labelTextStyle: MaterialStateProperty.resolveWith<TextStyle?>((states) {
                   if (states.contains(MaterialState.selected)) {
@@ -669,7 +518,6 @@ class MyApp extends StatelessWidget {
                 }),
               ),
             ),
-
             themeMode: themeProvider.currentThemeMode,
             home: const AppInitializer(),
             debugShowCheckedModeBanner: false,
@@ -680,7 +528,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Widget AppInitializer của bạn giữ nguyên, không có lỗi.
+// Class AppInitializer của bạn giữ nguyên, không cần thay đổi
 class AppInitializer extends StatefulWidget {
   const AppInitializer({Key? key}) : super(key: key);
 
@@ -694,16 +542,39 @@ class _AppInitializerState extends State<AppInitializer> {
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    _initializeAppAndScheduleTasks();
   }
 
-  Future<void> _initializeApp() async {
+  Future<void> _initializeAppAndScheduleTasks() async {
     await Provider.of<LanguageProvider>(context, listen: false).loadSavedLanguage();
+    await _setupPermissionsAndTasks();
 
     if (mounted) {
       setState(() {
         _isInitialized = true;
       });
+    }
+  }
+
+  Future<void> _setupPermissionsAndTasks() async {
+    print("[AppInitializer] Bắt đầu thiết lập quyền và tác vụ nền...");
+
+    await Permission.location.request();
+    await Permission.notification.request();
+
+    final locationService = LocationService();
+    await locationService.getCurrentPositionAndSave();
+
+    final prefs = await SharedPreferences.getInstance();
+    final bool isTaskScheduled = prefs.getBool('isTaskScheduled') ?? false;
+
+    if (!isTaskScheduled) {
+      print("[AppInitializer] Tác vụ chưa được lên lịch. Bắt đầu lên lịch...");
+      await backgroundTaskService.registerInexactPeriodicTask();
+      await prefs.setBool('isTaskScheduled', true);
+      print("[AppInitializer] Đã lên lịch tác vụ thành công.");
+    } else {
+      print("[AppInitializer] Tác vụ đã được lên lịch từ trước. Bỏ qua.");
     }
   }
 
@@ -720,3 +591,6 @@ class _AppInitializerState extends State<AppInitializer> {
     }
   }
 }
+
+
+

@@ -1,61 +1,47 @@
 // lib/services/location_service.dart
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
-  /// Lấy vị trí hiện tại của người dùng.
-  ///
-  /// Trả về một đối tượng `Position` nếu thành công.
-  /// Ném ra một `Future.error` với thông báo lỗi nếu:
-  /// - Dịch vụ vị trí bị tắt.
-  /// - Quyền truy cập vị trí bị từ chối.
-  /// - Quyền truy cập vị trí bị từ chối vĩnh viễn.
-  /// Trả về `null` nếu có lỗi không mong muốn khác khi lấy vị trí.
-  Future<Position?> getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  static const String _latKey = 'user_latitude';
+  static const String _lonKey = 'user_longitude';
 
-    // Kiểm tra xem dịch vụ vị trí có được bật không.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Dịch vụ vị trí không được bật, không thể tiếp tục
-      // truy cập vị trí hoặc yêu cầu người dùng bật dịch vụ vị trí.
-      print("[LocationService] Dịch vụ vị trí bị tắt.");
-      return Future.error('Dịch vụ vị trí bị tắt.');
-    }
+  Future<bool> requestPermission() async {
+    var status = await Permission.location.request();
+    return status.isGranted;
+  }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Quyền bị từ chối, lần sau người dùng có thể thử lại
-        // (ví dụ, bằng cách hiển thị lại yêu cầu quyền).
-        print("[LocationService] Quyền truy cập vị trí bị từ chối.");
-        return Future.error('Quyền truy cập vị trí bị từ chối.');
-      }
-    }
+  // Lấy vị trí hiện tại và lưu vào SharedPreferences
+  Future<void> getCurrentPositionAndSave() async {
+    final hasPermission = await requestPermission();
+    if (!hasPermission) return;
 
-    if (permission == LocationPermission.deniedForever) {
-      // Quyền bị từ chối vĩnh viễn, xử lý phù hợp.
-      // Hướng dẫn người dùng vào cài đặt ứng dụng để cấp quyền.
-      print("[LocationService] Quyền truy cập vị trí bị từ chối vĩnh viễn.");
-      return Future.error(
-          'Quyền truy cập vị trí bị từ chối vĩnh viễn. Vui lòng bật trong cài đặt ứng dụng.');
-    }
-
-    // Khi quyền đã được cấp (hoặc được cấp trước đó),
-    // chúng ta có thể truy cập vị trí của thiết bị.
     try {
-      print("[LocationService] Đang lấy vị trí hiện tại...");
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high, // Có thể điều chỉnh độ chính xác
-        // timeLimit: Duration(seconds: 10) // Có thể đặt giới hạn thời gian
+        desiredAccuracy: LocationAccuracy.high,
       );
-      print("[LocationService] Vị trí lấy được: ${position.latitude}, ${position.longitude}");
-      return position;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(_latKey, position.latitude);
+      await prefs.setDouble(_lonKey, position.longitude);
+      print('Đã lưu vị trí lần cuối: ${position.latitude}, ${position.longitude}');
     } catch (e) {
-      print("[LocationService] Lỗi không mong muốn khi lấy vị trí: $e");
-      // Trả về null hoặc ném lỗi tùy theo cách bạn muốn xử lý ở nơi gọi
-      return null;
+      print('Lỗi khi lấy và lưu vị trí: $e');
     }
+  }
+
+  // Lấy vị trí đã lưu (dùng cho tác vụ nền)
+  Future<Position?> getSavedPosition() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lat = prefs.getDouble(_latKey);
+    final lon = prefs.getDouble(_lonKey);
+
+    if (lat != null && lon != null) {
+      return Position(
+        latitude: lat, longitude: lon, timestamp: DateTime.now(), accuracy: 0,
+        altitude: 0, altitudeAccuracy: 0, heading: 0, headingAccuracy: 0, speed: 0, speedAccuracy: 0,
+      );
+    }
+    return null;
   }
 }

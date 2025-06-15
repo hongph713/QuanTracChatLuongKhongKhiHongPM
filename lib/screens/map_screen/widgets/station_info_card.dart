@@ -361,7 +361,7 @@ class StationInfoCard extends StatelessWidget {
         // Ở chế độ sáng, nền sẽ là màu theo mức độ AQI (giữ lại thiết kế cũ).
         color: isDarkMode ? theme.cardColor : AQIUtils.getAQIColorBgr(aqi),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -369,7 +369,7 @@ class StationInfoCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       station.viTri,
@@ -386,34 +386,76 @@ class StationInfoCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 15),
               Text(
                 aqi.toString(),
                 style: TextStyle(
                   fontSize: 52,
                   fontWeight: FontWeight.bold,
-                  color: aqiColor, // Giữ lại màu AQI để nhấn mạnh
+                  color: aqiColor,
+                  height: 1.2,// Giữ lại màu AQI để nhấn mạnh
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 1),
               Text(
                 aqiCategory,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: aqiColor, // Giữ lại màu AQI để nhấn mạnh
+                  color: aqiColor,
+                  height: 1.2,// Giữ lại màu AQI để nhấn mạnh
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              // Stack(
+              //   alignment: Alignment.center,
+              //   children: [
+              //     // Lớp 1: Hình tròn màu vàng ở dưới
+              //     Container(
+              //       width: 120, // Bạn có thể điều chỉnh kích thước vòng tròn ở đây
+              //       height: 120, // Bạn có thể điều chỉnh kích thước vòng tròn ở đây
+              //       decoration: BoxDecoration(
+              //         color: aqiColor, // Sử dụng màu AQI làm nền cho vòng tròn
+              //         shape: BoxShape.circle,
+              //       ),
+              //     ),
+              //
+              //     // Lớp 2: Cột chứa số 79 và chữ "Trung bình" ở trên
+              //     Column(
+              //       mainAxisSize: MainAxisSize.min,
+              //       children: [
+              //         Text(
+              //           aqi.toString(), // Text hiển thị số 79
+              //           style: TextStyle(
+              //             fontSize: 40,
+              //             fontWeight: FontWeight.bold,
+              //             color: Colors.black87, // <-- ĐỔI MÀU CHỮ THÀNH ĐEN
+              //             height: 1.1,
+              //           ),
+              //         ),
+              //         // SizedBox(height: 2), // Có thể thêm một khoảng trống nhỏ nếu cần
+              //         Text(
+              //           aqiCategory, // Text hiển thị "Trung bình"
+              //           style: TextStyle(
+              //             fontSize: 13,
+              //             fontWeight: FontWeight.w500,
+              //             color: Colors.black87, // <-- ĐỔI MÀU CHỮ THÀNH ĐEN
+              //             height: 1.0,
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ],
+              // ),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildInfoItem(
                     context: context,
                     icon: Icons.thermostat_outlined,
-                    value: '${station.nhietDo.toStringAsFixed(1)}°C',
+                    value: '${station.nhietDo.toStringAsFixed(0)}°C',
                     label: l10n.temperature ?? 'Nhiệt độ',
                   ),
                   _buildInfoItem(
@@ -424,7 +466,7 @@ class StationInfoCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               Card(
                 color: aqiColor, // Nền thẻ cảnh báo là màu AQI
                 shape: RoundedRectangleBorder(
@@ -438,7 +480,7 @@ class StationInfoCard extends StatelessWidget {
                       Icon(
                         AQIUtils.getWarningIcon(aqi),
                         // << 5. Màu icon trên thẻ cảnh báo tuân theo độ tương phản >>
-                        color: contentColorOnAqiCard,
+                        color: Colors.black87,
                         size: 36,
                       ),
                       const SizedBox(width: 12),
@@ -447,8 +489,8 @@ class StationInfoCard extends StatelessWidget {
                           aqiMessage,
                           style: TextStyle(
                             // << 6. Màu chữ trên thẻ cảnh báo tuân theo độ tương phản >>
-                            color: contentColorOnAqiCard,
-                            fontSize: 14,
+                            color: Colors.black87,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
                           textAlign: TextAlign.center,
@@ -504,21 +546,21 @@ class StationInfoCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: theme.colorScheme.onSurface.withOpacity(0.7), size: 26),
-        const SizedBox(height: 4),
+        Icon(icon, color: theme.colorScheme.onSurface.withOpacity(0.7), size: 22),
+        const SizedBox(height: 3),
         Text(
           value,
           style: TextStyle(
-            fontSize: 17,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
             color: theme.colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 1),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             color: theme.colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
@@ -526,3 +568,4 @@ class StationInfoCard extends StatelessWidget {
     );
   }
 }
+
