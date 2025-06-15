@@ -809,6 +809,458 @@
 //   }
 // }
 
+// import 'dart:async';
+// import 'dart:math';
+// import 'package:flutter/material.dart';
+// import 'package:firebase_database/firebase_database.dart';
+// import 'package:fl_chart/fl_chart.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:intl/intl.dart';
+// import 'package:collection/collection.dart';
+//
+// import '../../../models/AQIUtils.dart';
+//
+// enum ChartDataType { aqi, pm25 }
+// enum ChartTimeRange { hour, day }
+//
+// class HistoricalDataPoint {
+//   final DateTime timestamp;
+//   final double pm25Value;
+//
+//   HistoricalDataPoint({required this.timestamp, required this.pm25Value});
+// }
+//
+// class HistoryChartWidget extends StatefulWidget {
+//   final String stationId;
+//
+//   const HistoryChartWidget({Key? key, required this.stationId}) : super(key: key);
+//
+//   @override
+//   _HistoryChartWidgetState createState() => _HistoryChartWidgetState();
+// }
+//
+// class _HistoryChartWidgetState extends State<HistoryChartWidget> {
+//   ChartDataType _selectedDataType = ChartDataType.aqi;
+//   ChartTimeRange _selectedTimeRange = ChartTimeRange.hour;
+//
+//   List<HistoricalDataPoint> _aggregatedData = [];
+//   bool _isLoadingChart = true;
+//   String _chartErrorMessage = '';
+//   String _displayDateRange = '';
+//   double _averageValue = 0;
+//   double _maxY = 0;
+//
+//   int? _touchedIndex;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _fetchHistoryData();
+//     });
+//   }
+//
+//   // ... (Các hàm _aggregateData, _fetchHistoryData, _prepareChartData giữ nguyên)
+//   List<HistoricalDataPoint> _aggregateData(List<HistoricalDataPoint> rawData, ChartTimeRange timeRange) {
+//     if (rawData.isEmpty) return [];
+//
+//     if (timeRange == ChartTimeRange.hour) {
+//       final groupedByHour = groupBy(rawData, (p) => DateFormat('yyyy-MM-dd-HH').format(p.timestamp));
+//       return groupedByHour.entries.map((entry) {
+//         final values = entry.value.map((p) => p.pm25Value).toList();
+//         final average = values.reduce((a, b) => a + b) / values.length;
+//         return HistoricalDataPoint(timestamp: entry.value.first.timestamp, pm25Value: average);
+//       }).toList();
+//     } else { // Day
+//       final groupedByDay = groupBy(rawData, (p) => DateFormat('yyyy-MM-dd').format(p.timestamp));
+//       return groupedByDay.entries.map((entry) {
+//         final values = entry.value.map((p) => p.pm25Value).toList();
+//         final average = values.reduce((a, b) => a + b) / values.length;
+//         return HistoricalDataPoint(timestamp: entry.value.first.timestamp, pm25Value: average);
+//       }).toList();
+//     }
+//   }
+//
+//   Future<void> _fetchHistoryData() async {
+//     if (!mounted) return;
+//     final l10n = AppLocalizations.of(context);
+//     if (l10n == null) {
+//       Future.delayed(const Duration(milliseconds: 100), () => _fetchHistoryData());
+//       return;
+//     }
+//
+//     setState(() {
+//       _isLoadingChart = true;
+//       _chartErrorMessage = '';
+//       _aggregatedData = [];
+//       _touchedIndex = null;
+//     });
+//
+//     try {
+//       final historyRef = FirebaseDatabase.instance.ref('cacThietBiQuanTrac/${widget.stationId}');
+//       final now = DateTime.now();
+//       final startTimeFilter = now.subtract(const Duration(days: 7));
+//       final snapshot = await historyRef.orderByChild('time').startAt(startTimeFilter.millisecondsSinceEpoch).once();
+//
+//       if (!mounted || snapshot.snapshot.value == null) {
+//         setState(() {
+//           _isLoadingChart = false;
+//           _chartErrorMessage = l10n.noHistoricalData ?? 'Không có dữ liệu lịch sử.';
+//         });
+//         return;
+//       }
+//
+//       final Map<dynamic, dynamic> data = snapshot.snapshot.value as Map<dynamic, dynamic>;
+//       List<HistoricalDataPoint> fetchedPoints = [];
+//
+//       data.forEach((key, record) {
+//         if (record is Map) {
+//           final int? timestampMs = record['time'] as int?;
+//           final num? pm25Value = record['pm25'] as num?;
+//           if (timestampMs != null && pm25Value != null) {
+//             final double pm25 = pm25Value.toDouble() / 100.0;
+//             fetchedPoints.add(HistoricalDataPoint(
+//               timestamp: DateTime.fromMillisecondsSinceEpoch(timestampMs),
+//               pm25Value: pm25,
+//             ));
+//           }
+//         }
+//       });
+//
+//       List<HistoricalDataPoint> finalData;
+//       if (_selectedTimeRange == ChartTimeRange.hour) {
+//         final last24hData = fetchedPoints.where((p) => p.timestamp.isAfter(now.subtract(const Duration(hours: 24)))).toList();
+//         finalData = _aggregateData(last24hData, _selectedTimeRange);
+//       } else {
+//         finalData = _aggregateData(fetchedPoints, _selectedTimeRange);
+//       }
+//
+//       finalData.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+//
+//       setState(() {
+//         _aggregatedData = finalData;
+//         _isLoadingChart = false;
+//         _prepareChartData();
+//       });
+//     } catch (e, s) {
+//       if (mounted) {
+//         print('[HistoryChartWidget] Error: $e\n$s');
+//         setState(() => _isLoadingChart = false);
+//       }
+//     }
+//   }
+//
+//   void _prepareChartData() {
+//     if (!mounted) return;
+//     final l10n = AppLocalizations.of(context);
+//
+//     if (_aggregatedData.isEmpty) {
+//       setState(() {
+//         _averageValue = 0;
+//         _maxY = (_selectedDataType == ChartDataType.aqi) ? 200 : 50;
+//         _displayDateRange = _selectedTimeRange == ChartTimeRange.hour ? (l10n?.last24Hours ?? "24 giờ qua") : (l10n?.last7Days ?? "7 ngày qua");
+//         if (_chartErrorMessage.isEmpty && !_isLoadingChart) {
+//           _chartErrorMessage = l10n?.noDataForTimeRange ?? "Không có dữ liệu cho khoảng thời gian này.";
+//         }
+//       });
+//       return;
+//     }
+//
+//     final displayValues = _aggregatedData.map((p) {
+//       return _selectedDataType == ChartDataType.aqi ? AQIUtils.calculateAQI(p.pm25Value) : p.pm25Value;
+//     }).toList();
+//
+//     double sum = displayValues.reduce((a, b) => a + b).toDouble();
+//     double maxValue = displayValues.reduce(max).toDouble();
+//
+//     setState(() {
+//       _averageValue = sum / displayValues.length;
+//       _maxY = (maxValue / 50).ceil() * 50.0;
+//       if (_maxY < 50) _maxY = 50;
+//
+//       final DateFormat formatter;
+//       if (_selectedTimeRange == ChartTimeRange.hour) {
+//         formatter = DateFormat('HH:00 dd/MM/yyyy');
+//       } else {
+//         formatter = DateFormat('dd/MM/yyyy');
+//       }
+//       _displayDateRange = '${formatter.format(_aggregatedData.first.timestamp)} - ${formatter.format(_aggregatedData.last.timestamp)}';
+//       _chartErrorMessage = '';
+//     });
+//   }
+//
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final l10n = AppLocalizations.of(context);
+//     // << 1. Lấy thông tin theme để sử dụng >>
+//     final theme = Theme.of(context);
+//     final textTheme = theme.textTheme;
+//     final colorScheme = theme.colorScheme;
+//
+//     return Card(
+//       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+//       elevation: 2.0,
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+//       // << Nền card sẽ tự động đổi màu theo theme >>
+//       color: theme.cardColor,
+//       child: Padding(
+//         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 _buildTimeRangeDropdown(l10n),
+//                 _buildDataTypeToggle(l10n),
+//               ],
+//             ),
+//             const SizedBox(height: 24),
+//             SizedBox(
+//               height: 250,
+//               child: _isLoadingChart
+//                   ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
+//                   : _aggregatedData.isEmpty || _chartErrorMessage.isNotEmpty
+//                   ? Center(child: Text(_chartErrorMessage.isNotEmpty ? _chartErrorMessage : (l10n?.noDataToDisplay ?? 'Không có dữ liệu để hiển thị.'), style: textTheme.bodyLarge))
+//                   : BarChart(
+//                 BarChartData(
+//                   maxY: _maxY,
+//                   barGroups: _generateBarGroups(),
+//                   groupsSpace: 6,
+//                   // << 2. Cập nhật màu cho lưới và viền biểu đồ >>
+//                   gridData: FlGridData(
+//                     show: true,
+//                     drawVerticalLine: true,
+//                     horizontalInterval: 50,
+//                     verticalInterval: 1,
+//                     getDrawingHorizontalLine: (value) => FlLine(
+//                       color: theme.dividerColor.withOpacity(0.1),
+//                       strokeWidth: 1,
+//                     ),
+//                     getDrawingVerticalLine: (value) => FlLine(
+//                       color: theme.dividerColor.withOpacity(0.1),
+//                       strokeWidth: 1,
+//                     ),
+//                   ),
+//                   borderData: FlBorderData(
+//                     show: true,
+//                     border: Border(
+//                       bottom: BorderSide(color: theme.dividerColor, width: 1.5),
+//                       left: BorderSide(color: theme.dividerColor, width: 1.5),
+//                       right: const BorderSide(color: Colors.transparent),
+//                       top: const BorderSide(color: Colors.transparent),
+//                     ),
+//                   ),
+//                   titlesData: FlTitlesData(
+//                     bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: _bottomTitles, reservedSize: 30)),
+//                     leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 38, interval: 50, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: textTheme.bodySmall))),
+//                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+//                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+//                   ),
+//                   barTouchData: BarTouchData(
+//                     touchCallback: (event, response) {
+//                       setState(() {
+//                         if (event.isInterestedForInteractions && response?.spot != null) {
+//                           _touchedIndex = response!.spot!.touchedBarGroupIndex;
+//                         } else {
+//                           _touchedIndex = null;
+//                         }
+//                       });
+//                     },
+//                     touchTooltipData: BarTouchTooltipData(
+//                       getTooltipColor: (group) => Colors.black.withOpacity(0.8),
+//                       tooltipPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+//                       tooltipMargin: 8,
+//                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
+//                         if (_aggregatedData.isEmpty || groupIndex >= _aggregatedData.length) return null;
+//                         final dataPoint = _aggregatedData[groupIndex];
+//                         final displayValue = _selectedDataType == ChartDataType.aqi
+//                             ? AQIUtils.calculateAQI(dataPoint.pm25Value)
+//                             : dataPoint.pm25Value;
+//                         return BarTooltipItem(
+//                           displayValue.toStringAsFixed(1),
+//                           const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+//                         );
+//                       },
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(height: 16),
+//             if (!_isLoadingChart && _aggregatedData.isNotEmpty)
+//               Column(
+//                 children: [
+//                   Center(
+//                     child: Text(
+//                       _displayDateRange,
+//                       // << 3. Cập nhật màu chữ >>
+//                       style: textTheme.bodyMedium,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 4),
+//                   Center(
+//                     child: Text(
+//                       '${_selectedDataType == ChartDataType.aqi ? "AQI" : "PM2.5"} ${l10n?.average ?? "trung bình"}: ${_averageValue.toStringAsFixed(1)}',
+//                       // << 4. Cập nhật màu chữ >>
+//                       style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+//
+//   List<BarChartGroupData> _generateBarGroups() {
+//     return List.generate(_aggregatedData.length, (i) {
+//       final point = _aggregatedData[i];
+//       final isTouched = i == _touchedIndex;
+//       final aqiValue = AQIUtils.calculateAQI(point.pm25Value);
+//       final displayHeight = _selectedDataType == ChartDataType.aqi ? aqiValue : point.pm25Value;
+//       return BarChartGroupData(
+//         x: i,
+//         barRods: [
+//           BarChartRodData(
+//             toY: displayHeight.toDouble(),
+//             color: AQIUtils.getAQIColor(aqiValue.round()),
+//             width: isTouched ? 22 : 18,
+//             borderRadius: const BorderRadius.all(Radius.circular(6)),
+//           ),
+//         ],
+//       );
+//     });
+//   }
+//
+//   Widget _buildTimeRangeDropdown(AppLocalizations? l10n) {
+//     // << 5. Cập nhật dropdown >>
+//     final theme = Theme.of(context);
+//     final isDarkMode = theme.brightness == Brightness.dark;
+//
+//     return Container(
+//       height: 40,
+//       decoration: BoxDecoration(
+//         color: isDarkMode ? Colors.blueGrey[700] : Colors.white, // << Màu nền dropdown
+//         borderRadius: BorderRadius.circular(8.0),
+//         border: Border.all(color: theme.dividerColor.withOpacity(0.5), width: 1),
+//         boxShadow: [
+//           if (!isDarkMode)
+//             BoxShadow(
+//               color: Colors.black.withOpacity(0.05),
+//               blurRadius: 4,
+//               offset: const Offset(0, 2),
+//             ),
+//         ],
+//       ),
+//       child: PopupMenuButton<ChartTimeRange>(
+//         onSelected: (ChartTimeRange newValue) {
+//           if (newValue != _selectedTimeRange) {
+//             setState(() => _selectedTimeRange = newValue);
+//             _fetchHistoryData();
+//           }
+//         },
+//         offset: const Offset(0, 42),
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+//         // << Nền của menu popup >>
+//         color: theme.cardColor,
+//         itemBuilder: (BuildContext context) => <PopupMenuEntry<ChartTimeRange>>[
+//           PopupMenuItem<ChartTimeRange>(
+//             value: ChartTimeRange.day,
+//             // << Màu chữ trong menu popup >>
+//             child: Text(l10n?.day ?? 'Ngày', style: theme.textTheme.bodyLarge),
+//           ),
+//           PopupMenuItem<ChartTimeRange>(
+//             value: ChartTimeRange.hour,
+//             child: Text(l10n?.hour ?? 'Giờ', style: theme.textTheme.bodyLarge),
+//           ),
+//         ],
+//         child: Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 12.0),
+//           child: Row(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Text(
+//                 _selectedTimeRange == ChartTimeRange.day ? (l10n?.day ?? 'Ngày') : (l10n?.hour ?? 'Giờ'),
+//                 // << Màu chữ dropdown >>
+//                 style: theme.textTheme.bodyLarge?.copyWith(
+//                     color: isDarkMode ? Colors.white : Colors.black87),
+//               ),
+//               const SizedBox(width: 8),
+//               // << Màu icon dropdown >>
+//               Icon(Icons.arrow_drop_down, color: isDarkMode ? Colors.white70 : Colors.grey),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Widget _buildDataTypeToggle(AppLocalizations? l10n) {
+//     // << 6. Cập nhật nút AQI/PM2.5 >>
+//     final theme = Theme.of(context);
+//     final isDarkMode = theme.brightness == Brightness.dark;
+//
+//     // Màu cho nút được chọn
+//     final Color selectedFillColor = isDarkMode ? Colors.blueGrey[700]! : theme.colorScheme.primary;
+//     // Màu cho nút không được chọn
+//     final Color unselectedColor = isDarkMode ? Colors.white70 : theme.colorScheme.primary;
+//
+//     return SizedBox(
+//       height: 40,
+//       child: ToggleButtons(
+//         isSelected: [_selectedDataType == ChartDataType.aqi, _selectedDataType == ChartDataType.pm25],
+//         onPressed: (int index) {
+//           final type = index == 0 ? ChartDataType.aqi : ChartDataType.pm25;
+//           if (_selectedDataType != type) {
+//             setState(() => _selectedDataType = type);
+//             _prepareChartData();
+//           }
+//         },
+//         borderRadius: BorderRadius.circular(8.0),
+//         selectedColor: Colors.white, // Chữ của nút được chọn luôn là màu trắng
+//         color: unselectedColor, // Chữ của nút không được chọn
+//         fillColor: selectedFillColor, // Nền của nút được chọn
+//         splashColor: selectedFillColor.withOpacity(0.12),
+//         renderBorder: true,
+//         borderColor: unselectedColor,
+//         selectedBorderColor: selectedFillColor,
+//         constraints: const BoxConstraints(minWidth: 80.0),
+//         children: const [
+//           Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('AQI')),
+//           Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('PM2.5')),
+//         ],
+//       ),
+//     );
+//   }
+//
+//   Widget _bottomTitles(double value, TitleMeta meta) {
+//     final int index = value.toInt();
+//     if (index < 0 || index >= _aggregatedData.length) {
+//       return const SizedBox.shrink();
+//     }
+//
+//     final int skipInterval = _selectedTimeRange == ChartTimeRange.hour ? 4 : 2;
+//     if (index % skipInterval != 0 && index != _aggregatedData.length -1) {
+//       return const SizedBox.shrink();
+//     }
+//
+//     final point = _aggregatedData[index];
+//     String text = _selectedTimeRange == ChartTimeRange.hour
+//         ? DateFormat('H:00').format(point.timestamp)
+//         : DateFormat('dd/MM').format(point.timestamp);
+//
+//     // << 7. Cập nhật màu cho trục X của biểu đồ >>
+//     return SideTitleWidget(
+//       axisSide: meta.axisSide,
+//       space: 4,
+//       child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+//     );
+//   }
+// }
+
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -823,11 +1275,12 @@ import '../../../models/AQIUtils.dart';
 enum ChartDataType { aqi, pm25 }
 enum ChartTimeRange { hour, day }
 
+// MODIFIED: pm25Value có thể là null để biểu thị không có dữ liệu
 class HistoricalDataPoint {
   final DateTime timestamp;
-  final double pm25Value;
+  final double? pm25Value;
 
-  HistoricalDataPoint({required this.timestamp, required this.pm25Value});
+  HistoricalDataPoint({required this.timestamp, this.pm25Value});
 }
 
 class HistoryChartWidget extends StatefulWidget {
@@ -843,157 +1296,177 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
   ChartDataType _selectedDataType = ChartDataType.aqi;
   ChartTimeRange _selectedTimeRange = ChartTimeRange.hour;
 
-  List<HistoricalDataPoint> _aggregatedData = [];
+  // Dữ liệu này sẽ luôn có 24 hoặc 7 điểm, một số có thể không có giá trị
+  List<HistoricalDataPoint> _chartData = [];
   bool _isLoadingChart = true;
   String _chartErrorMessage = '';
   String _displayDateRange = '';
   double _averageValue = 0;
-  double _maxY = 0;
+  double _maxY = 50;
 
   int? _touchedIndex;
+  String? _touchedMessage; // NEW: Thêm message khi chạm vào cột
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchHistoryData();
+      _fetchAndPrepareData();
     });
   }
 
-  // ... (Các hàm _aggregateData, _fetchHistoryData, _prepareChartData giữ nguyên)
-  List<HistoricalDataPoint> _aggregateData(List<HistoricalDataPoint> rawData, ChartTimeRange timeRange) {
-    if (rawData.isEmpty) return [];
-
-    if (timeRange == ChartTimeRange.hour) {
-      final groupedByHour = groupBy(rawData, (p) => DateFormat('yyyy-MM-dd-HH').format(p.timestamp));
-      return groupedByHour.entries.map((entry) {
-        final values = entry.value.map((p) => p.pm25Value).toList();
-        final average = values.reduce((a, b) => a + b) / values.length;
-        return HistoricalDataPoint(timestamp: entry.value.first.timestamp, pm25Value: average);
-      }).toList();
-    } else { // Day
-      final groupedByDay = groupBy(rawData, (p) => DateFormat('yyyy-MM-dd').format(p.timestamp));
-      return groupedByDay.entries.map((entry) {
-        final values = entry.value.map((p) => p.pm25Value).toList();
-        final average = values.reduce((a, b) => a + b) / values.length;
-        return HistoricalDataPoint(timestamp: entry.value.first.timestamp, pm25Value: average);
-      }).toList();
-    }
-  }
-
-  Future<void> _fetchHistoryData() async {
+  // NEW: Hàm chính để điều phối việc lấy và chuẩn bị dữ liệu
+  Future<void> _fetchAndPrepareData() async {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
-    if (l10n == null) {
-      Future.delayed(const Duration(milliseconds: 100), () => _fetchHistoryData());
-      return;
-    }
 
     setState(() {
       _isLoadingChart = true;
       _chartErrorMessage = '';
-      _aggregatedData = [];
       _touchedIndex = null;
+      _touchedMessage = null;
     });
 
     try {
-      final historyRef = FirebaseDatabase.instance.ref('cacThietBiQuanTrac/${widget.stationId}');
       final now = DateTime.now();
-      final startTimeFilter = now.subtract(const Duration(days: 7));
-      final snapshot = await historyRef.orderByChild('time').startAt(startTimeFilter.millisecondsSinceEpoch).once();
 
-      if (!mounted || snapshot.snapshot.value == null) {
-        setState(() {
-          _isLoadingChart = false;
-          _chartErrorMessage = l10n.noHistoricalData ?? 'Không có dữ liệu lịch sử.';
-        });
-        return;
-      }
+      // Xác định khoảng thời gian cần lấy dữ liệu từ Firebase
+      final Duration fetchDuration = _selectedTimeRange == ChartTimeRange.hour
+          ? const Duration(hours: 24)
+          : const Duration(days: 7);
 
-      final Map<dynamic, dynamic> data = snapshot.snapshot.value as Map<dynamic, dynamic>;
+      final startTimeFilter = now.subtract(fetchDuration);
+
+      final historyRef = FirebaseDatabase.instance.ref('cacThietBiQuanTrac/${widget.stationId}');
+      final snapshot = await historyRef.orderByChild('time').startAt(startTimeFilter.millisecondsSinceEpoch).endAt(now.millisecondsSinceEpoch).once();
+
       List<HistoricalDataPoint> fetchedPoints = [];
-
-      data.forEach((key, record) {
-        if (record is Map) {
-          final int? timestampMs = record['time'] as int?;
-          final num? pm25Value = record['pm25'] as num?;
-          if (timestampMs != null && pm25Value != null) {
-            final double pm25 = pm25Value.toDouble() / 100.0;
-            fetchedPoints.add(HistoricalDataPoint(
-              timestamp: DateTime.fromMillisecondsSinceEpoch(timestampMs),
-              pm25Value: pm25,
-            ));
+      if (snapshot.snapshot.value != null) {
+        final Map<dynamic, dynamic> data = snapshot.snapshot.value as Map<dynamic, dynamic>;
+        data.forEach((key, record) {
+          if (record is Map) {
+            final int? timestampMs = record['time'] as int?;
+            final num? pm25Value = record['pm25'] as num?;
+            if (timestampMs != null && pm25Value != null) {
+              fetchedPoints.add(HistoricalDataPoint(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(timestampMs),
+                pm25Value: pm25Value.toDouble() / 100.0,
+              ));
+            }
           }
-        }
-      });
-
-      List<HistoricalDataPoint> finalData;
-      if (_selectedTimeRange == ChartTimeRange.hour) {
-        final last24hData = fetchedPoints.where((p) => p.timestamp.isAfter(now.subtract(const Duration(hours: 24)))).toList();
-        finalData = _aggregateData(last24hData, _selectedTimeRange);
-      } else {
-        finalData = _aggregateData(fetchedPoints, _selectedTimeRange);
+        });
       }
 
-      finalData.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      // Tạo khung biểu đồ và điền dữ liệu vào
+      final generatedData = _generateChartDataWithPlaceholders(fetchedPoints);
 
       setState(() {
-        _aggregatedData = finalData;
+        _chartData = generatedData;
         _isLoadingChart = false;
-        _prepareChartData();
+        _prepareChartDisplayInfo();
       });
+
     } catch (e, s) {
       if (mounted) {
         print('[HistoryChartWidget] Error: $e\n$s');
-        setState(() => _isLoadingChart = false);
+        setState(() {
+          _isLoadingChart = false;
+          _chartErrorMessage = l10n?.errorLoadingData ?? 'Lỗi khi tải dữ liệu.';
+        });
       }
     }
   }
 
-  void _prepareChartData() {
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context);
+  // NEW: Hàm tạo "khung" biểu đồ và điền dữ liệu
+  List<HistoricalDataPoint> _generateChartDataWithPlaceholders(List<HistoricalDataPoint> fetchedData) {
+    final List<HistoricalDataPoint> placeholderData = [];
+    final now = DateTime.now();
 
-    if (_aggregatedData.isEmpty) {
-      setState(() {
-        _averageValue = 0;
-        _maxY = (_selectedDataType == ChartDataType.aqi) ? 200 : 50;
-        _displayDateRange = _selectedTimeRange == ChartTimeRange.hour ? (l10n?.last24Hours ?? "24 giờ qua") : (l10n?.last7Days ?? "7 ngày qua");
-        if (_chartErrorMessage.isEmpty && !_isLoadingChart) {
-          _chartErrorMessage = l10n?.noDataForTimeRange ?? "Không có dữ liệu cho khoảng thời gian này.";
+    if (_selectedTimeRange == ChartTimeRange.hour) {
+      final Map<int, List<double>> hourlyData = {};
+      for (var p in fetchedData) {
+        final hourKey = DateTime(p.timestamp.year, p.timestamp.month, p.timestamp.day, p.timestamp.hour).millisecondsSinceEpoch;
+        if(hourlyData[hourKey] == null) hourlyData[hourKey] = [];
+        hourlyData[hourKey]!.add(p.pm25Value!);
+      }
+
+      for (int i = 23; i >= 0; i--) {
+        final targetHour = now.subtract(Duration(hours: i));
+        final slotTimestamp = DateTime(targetHour.year, targetHour.month, targetHour.day, targetHour.hour);
+        final hourKey = slotTimestamp.millisecondsSinceEpoch;
+
+        if (hourlyData.containsKey(hourKey)) {
+          final values = hourlyData[hourKey]!;
+          final avg = values.reduce((a, b) => a + b) / values.length;
+          placeholderData.add(HistoricalDataPoint(timestamp: slotTimestamp, pm25Value: avg));
+        } else {
+          placeholderData.add(HistoricalDataPoint(timestamp: slotTimestamp, pm25Value: null));
         }
-      });
-      return;
-    }
+      }
+    } else { // ChartTimeRange.day
+      final Map<int, List<double>> dailyData = {};
+      for (var p in fetchedData) {
+        final dayKey = DateTime(p.timestamp.year, p.timestamp.month, p.timestamp.day).millisecondsSinceEpoch;
+        if(dailyData[dayKey] == null) dailyData[dayKey] = [];
+        dailyData[dayKey]!.add(p.pm25Value!);
+      }
 
-    final displayValues = _aggregatedData.map((p) {
-      return _selectedDataType == ChartDataType.aqi ? AQIUtils.calculateAQI(p.pm25Value) : p.pm25Value;
+      for (int i = 6; i >= 0; i--) {
+        final targetDay = now.subtract(Duration(days: i));
+        final slotTimestamp = DateTime(targetDay.year, targetDay.month, targetDay.day);
+        final dayKey = slotTimestamp.millisecondsSinceEpoch;
+
+        if (dailyData.containsKey(dayKey)) {
+          final values = dailyData[dayKey]!;
+          final avg = values.reduce((a, b) => a + b) / values.length;
+          placeholderData.add(HistoricalDataPoint(timestamp: slotTimestamp, pm25Value: avg));
+        } else {
+          placeholderData.add(HistoricalDataPoint(timestamp: slotTimestamp, pm25Value: null));
+        }
+      }
+    }
+    return placeholderData;
+  }
+
+  // NEW: Hàm chuẩn bị các thông tin hiển thị (trung bình, dải ngày, trục Y)
+  void _prepareChartDisplayInfo() {
+    if (!mounted) return;
+
+    // Lọc ra các điểm có dữ liệu để tính toán
+    final validData = _chartData.where((p) => p.pm25Value != null).toList();
+    final displayValues = validData.map((p) {
+      return _selectedDataType == ChartDataType.aqi
+          ? AQIUtils.calculateAQI(p.pm25Value!)
+          : p.pm25Value!;
     }).toList();
 
-    double sum = displayValues.reduce((a, b) => a + b).toDouble();
-    double maxValue = displayValues.reduce(max).toDouble();
-
-    setState(() {
-      _averageValue = sum / displayValues.length;
+    if (displayValues.isEmpty) {
+      _averageValue = 0;
+      _maxY = (_selectedDataType == ChartDataType.aqi) ? 200 : 50;
+    } else {
+      _averageValue = displayValues.reduce((a, b) => a + b) / displayValues.length;
+      final maxValue = displayValues.reduce(max);
       _maxY = (maxValue / 50).ceil() * 50.0;
       if (_maxY < 50) _maxY = 50;
+    }
 
-      final DateFormat formatter;
-      if (_selectedTimeRange == ChartTimeRange.hour) {
-        formatter = DateFormat('HH:00 dd/MM/yyyy');
-      } else {
-        formatter = DateFormat('dd/MM/yyyy');
-      }
-      _displayDateRange = '${formatter.format(_aggregatedData.first.timestamp)} - ${formatter.format(_aggregatedData.last.timestamp)}';
-      _chartErrorMessage = '';
-    });
+    // Cập nhật dải ngày tháng hiển thị
+    final now = DateTime.now();
+    if (_selectedTimeRange == ChartTimeRange.hour) {
+      final start = now.subtract(const Duration(hours: 23));
+      _displayDateRange = "${DateFormat('HH:00 dd/MM/yyyy').format(start)} - ${DateFormat('HH:00 dd/MM/yyyy').format(now)}";
+    } else { // Day
+      final start = now.subtract(const Duration(days: 6));
+      _displayDateRange = "${DateFormat('dd/MM/yyyy').format(start)} - ${DateFormat('dd/MM/yyyy').format(now)}";
+    }
   }
 
 
   @override
   Widget build(BuildContext context) {
+    // ...Phần build UI giữ nguyên cấu trúc cũ...
+    // Các hàm helper cho UI sẽ được sửa đổi bên dưới
     final l10n = AppLocalizations.of(context);
-    // << 1. Lấy thông tin theme để sử dụng >>
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
@@ -1002,7 +1475,6 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      // << Nền card sẽ tự động đổi màu theo theme >>
       color: theme.cardColor,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
@@ -1012,8 +1484,8 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildTimeRangeDropdown(l10n),
-                _buildDataTypeToggle(l10n),
+                _buildTimeRangeDropdown(l10n, theme),
+                _buildDataTypeToggle(l10n, theme),
               ],
             ),
             const SizedBox(height: 24),
@@ -1021,35 +1493,19 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
               height: 250,
               child: _isLoadingChart
                   ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
-                  : _aggregatedData.isEmpty || _chartErrorMessage.isNotEmpty
-                  ? Center(child: Text(_chartErrorMessage.isNotEmpty ? _chartErrorMessage : (l10n?.noDataToDisplay ?? 'Không có dữ liệu để hiển thị.'), style: textTheme.bodyLarge))
+                  : _chartErrorMessage.isNotEmpty
+                  ? Center(child: Text(_chartErrorMessage, style: textTheme.bodyLarge))
                   : BarChart(
                 BarChartData(
                   maxY: _maxY,
-                  barGroups: _generateBarGroups(),
+                  barGroups: _generateBarGroups(theme),
                   groupsSpace: 6,
-                  // << 2. Cập nhật màu cho lưới và viền biểu đồ >>
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: true,
-                    horizontalInterval: 50,
-                    verticalInterval: 1,
-                    getDrawingHorizontalLine: (value) => FlLine(
-                      color: theme.dividerColor.withOpacity(0.1),
-                      strokeWidth: 1,
-                    ),
-                    getDrawingVerticalLine: (value) => FlLine(
-                      color: theme.dividerColor.withOpacity(0.1),
-                      strokeWidth: 1,
-                    ),
-                  ),
+                  gridData: FlGridData(show: false), // Tắt lưới cho gọn
                   borderData: FlBorderData(
                     show: true,
                     border: Border(
                       bottom: BorderSide(color: theme.dividerColor, width: 1.5),
                       left: BorderSide(color: theme.dividerColor, width: 1.5),
-                      right: const BorderSide(color: Colors.transparent),
-                      top: const BorderSide(color: Colors.transparent),
                     ),
                   ),
                   titlesData: FlTitlesData(
@@ -1058,75 +1514,39 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
-                  barTouchData: BarTouchData(
-                    touchCallback: (event, response) {
-                      setState(() {
-                        if (event.isInterestedForInteractions && response?.spot != null) {
-                          _touchedIndex = response!.spot!.touchedBarGroupIndex;
-                        } else {
-                          _touchedIndex = null;
-                        }
-                      });
-                    },
-                    touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (group) => Colors.black.withOpacity(0.8),
-                      tooltipPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      tooltipMargin: 8,
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        if (_aggregatedData.isEmpty || groupIndex >= _aggregatedData.length) return null;
-                        final dataPoint = _aggregatedData[groupIndex];
-                        final displayValue = _selectedDataType == ChartDataType.aqi
-                            ? AQIUtils.calculateAQI(dataPoint.pm25Value)
-                            : dataPoint.pm25Value;
-                        return BarTooltipItem(
-                          displayValue.toStringAsFixed(1),
-                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                        );
-                      },
-                    ),
-                  ),
+                  barTouchData: _buildBarTouchData(l10n, theme),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            if (!_isLoadingChart && _aggregatedData.isNotEmpty)
-              Column(
-                children: [
-                  Center(
-                    child: Text(
-                      _displayDateRange,
-                      // << 3. Cập nhật màu chữ >>
-                      style: textTheme.bodyMedium,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Center(
-                    child: Text(
-                      '${_selectedDataType == ChartDataType.aqi ? "AQI" : "PM2.5"} ${l10n?.average ?? "trung bình"}: ${_averageValue.toStringAsFixed(1)}',
-                      // << 4. Cập nhật màu chữ >>
-                      style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
+            _buildSummaryInfo(l10n, textTheme),
           ],
         ),
       ),
     );
   }
 
-  List<BarChartGroupData> _generateBarGroups() {
-    return List.generate(_aggregatedData.length, (i) {
-      final point = _aggregatedData[i];
+  // MODIFIED: Cập nhật hàm tạo các cột biểu đồ
+  List<BarChartGroupData> _generateBarGroups(ThemeData theme) {
+    return List.generate(_chartData.length, (i) {
+      final point = _chartData[i];
       final isTouched = i == _touchedIndex;
-      final aqiValue = AQIUtils.calculateAQI(point.pm25Value);
-      final displayHeight = _selectedDataType == ChartDataType.aqi ? aqiValue : point.pm25Value;
+
+      double displayHeight = 0;
+      Color barColor = theme.dividerColor.withOpacity(0.2); // Màu mặc định cho cột không có dữ liệu
+
+      if (point.pm25Value != null) {
+        final aqiValue = AQIUtils.calculateAQI(point.pm25Value!);
+        displayHeight = (_selectedDataType == ChartDataType.aqi ? aqiValue : point.pm25Value!).toDouble();
+        barColor = AQIUtils.getAQIColor(aqiValue.round());
+      }
+
       return BarChartGroupData(
         x: i,
         barRods: [
           BarChartRodData(
-            toY: displayHeight.toDouble(),
-            color: AQIUtils.getAQIColor(aqiValue.round()),
+            toY: displayHeight,
+            color: barColor,
             width: isTouched ? 22 : 18,
             borderRadius: const BorderRadius.all(Radius.circular(6)),
           ),
@@ -1135,46 +1555,111 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
     });
   }
 
-  Widget _buildTimeRangeDropdown(AppLocalizations? l10n) {
-    // << 5. Cập nhật dropdown >>
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+  // NEW: Hàm xử lý sự kiện chạm vào cột
+  BarTouchData _buildBarTouchData(AppLocalizations? l10n, ThemeData theme) {
+    return BarTouchData(
+        handleBuiltInTouches: true, // Tắt tooltip mặc định
+        touchCallback: (event, response) {
+          if (event is PointerUpEvent || event is FlPanEndEvent) {
+            // Khi người dùng nhả tay, reset trạng thái
+            setState(() {
+              _touchedIndex = null;
+              _touchedMessage = null;
+            });
+            return;
+          }
 
+          if (response?.spot != null && event.isInterestedForInteractions) {
+            final index = response!.spot!.touchedBarGroupIndex;
+            final dataPoint = _chartData[index];
+
+            if (dataPoint.pm25Value == null) {
+              // Nếu không có dữ liệu
+              setState(() {
+                _touchedIndex = index;
+                _touchedMessage = l10n?.noDataForTimeRange ?? "Không có dữ liệu cho khoảng thời gian này";
+              });
+            } else {
+              // Nếu có dữ liệu, reset message để hiển thị thông tin trung bình
+              setState(() {
+                _touchedIndex = index;
+                _touchedMessage = null;
+              });
+            }
+          }
+        },
+        touchTooltipData: BarTouchTooltipData(
+          getTooltipColor: (_) => Colors.transparent, // Ẩn tooltip mặc định
+          getTooltipItem: (group, groupIndex, rod, rodIndex) => null,
+        )
+    );
+  }
+
+  // NEW: Hàm hiển thị thông tin tóm tắt hoặc message khi chạm
+  Widget _buildSummaryInfo(AppLocalizations? l10n, TextTheme textTheme) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      child: _touchedMessage != null
+          ? // Hiển thị message khi chạm vào cột không có dữ liệu
+      Container(
+        key: const ValueKey('touched_message'),
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Center(
+          child: Text(
+            _touchedMessage!,
+            style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.orangeAccent),
+          ),
+        ),
+      )
+          : // Hiển thị thông tin mặc định
+      Container(
+        key: const ValueKey('default_info'),
+        child: Column(
+          children: [
+            Center(
+              child: Text(_displayDateRange, style: textTheme.bodyMedium),
+            ),
+            const SizedBox(height: 4),
+            Center(
+              child: Text(
+                '${_selectedDataType == ChartDataType.aqi ? "AQI" : "PM2.5"} ${l10n?.average ?? "trung bình"}: ${_averageValue.toStringAsFixed(1)}',
+                style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Các hàm build UI phụ (Dropdown, Toggle) được giữ nguyên hoặc chỉnh sửa nhỏ
+  Widget _buildTimeRangeDropdown(AppLocalizations? l10n, ThemeData theme) {
+    final isDarkMode = theme.brightness == Brightness.dark;
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.blueGrey[700] : Colors.white, // << Màu nền dropdown
+        color: isDarkMode ? Colors.blueGrey[700] : Colors.white,
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(color: theme.dividerColor.withOpacity(0.5), width: 1),
-        boxShadow: [
-          if (!isDarkMode)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-        ],
       ),
       child: PopupMenuButton<ChartTimeRange>(
         onSelected: (ChartTimeRange newValue) {
           if (newValue != _selectedTimeRange) {
             setState(() => _selectedTimeRange = newValue);
-            _fetchHistoryData();
+            _fetchAndPrepareData(); // Gọi hàm mới
           }
         },
         offset: const Offset(0, 42),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-        // << Nền của menu popup >>
         color: theme.cardColor,
         itemBuilder: (BuildContext context) => <PopupMenuEntry<ChartTimeRange>>[
           PopupMenuItem<ChartTimeRange>(
-            value: ChartTimeRange.day,
-            // << Màu chữ trong menu popup >>
-            child: Text(l10n?.day ?? 'Ngày', style: theme.textTheme.bodyLarge),
+            value: ChartTimeRange.hour, // Đổi thứ tự
+            child: Text(l10n?.hour ?? 'Giờ', style: theme.textTheme.bodyLarge),
           ),
           PopupMenuItem<ChartTimeRange>(
-            value: ChartTimeRange.hour,
-            child: Text(l10n?.hour ?? 'Giờ', style: theme.textTheme.bodyLarge),
+            value: ChartTimeRange.day,
+            child: Text(l10n?.day ?? 'Ngày', style: theme.textTheme.bodyLarge),
           ),
         ],
         child: Padding(
@@ -1184,12 +1669,10 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
             children: [
               Text(
                 _selectedTimeRange == ChartTimeRange.day ? (l10n?.day ?? 'Ngày') : (l10n?.hour ?? 'Giờ'),
-                // << Màu chữ dropdown >>
                 style: theme.textTheme.bodyLarge?.copyWith(
                     color: isDarkMode ? Colors.white : Colors.black87),
               ),
               const SizedBox(width: 8),
-              // << Màu icon dropdown >>
               Icon(Icons.arrow_drop_down, color: isDarkMode ? Colors.white70 : Colors.grey),
             ],
           ),
@@ -1198,14 +1681,9 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
     );
   }
 
-  Widget _buildDataTypeToggle(AppLocalizations? l10n) {
-    // << 6. Cập nhật nút AQI/PM2.5 >>
-    final theme = Theme.of(context);
+  Widget _buildDataTypeToggle(AppLocalizations? l10n, ThemeData theme) {
     final isDarkMode = theme.brightness == Brightness.dark;
-
-    // Màu cho nút được chọn
     final Color selectedFillColor = isDarkMode ? Colors.blueGrey[700]! : theme.colorScheme.primary;
-    // Màu cho nút không được chọn
     final Color unselectedColor = isDarkMode ? Colors.white70 : theme.colorScheme.primary;
 
     return SizedBox(
@@ -1215,14 +1693,17 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
         onPressed: (int index) {
           final type = index == 0 ? ChartDataType.aqi : ChartDataType.pm25;
           if (_selectedDataType != type) {
-            setState(() => _selectedDataType = type);
-            _prepareChartData();
+            setState(() {
+              _selectedDataType = type;
+              // Chỉ cần chuẩn bị lại thông tin hiển thị, không cần fetch lại
+              _prepareChartDisplayInfo();
+            });
           }
         },
         borderRadius: BorderRadius.circular(8.0),
-        selectedColor: Colors.white, // Chữ của nút được chọn luôn là màu trắng
-        color: unselectedColor, // Chữ của nút không được chọn
-        fillColor: selectedFillColor, // Nền của nút được chọn
+        selectedColor: Colors.white,
+        color: unselectedColor,
+        fillColor: selectedFillColor,
         splashColor: selectedFillColor.withOpacity(0.12),
         renderBorder: true,
         borderColor: unselectedColor,
@@ -1238,21 +1719,20 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
 
   Widget _bottomTitles(double value, TitleMeta meta) {
     final int index = value.toInt();
-    if (index < 0 || index >= _aggregatedData.length) {
-      return const SizedBox.shrink();
+    if (index < 0 || index >= _chartData.length) return const SizedBox.shrink();
+
+    // Hiển thị cách nhau để đỡ rối
+    if (_selectedTimeRange == ChartTimeRange.hour) {
+      if (index % 4 != 0 && index != _chartData.length -1) return const SizedBox.shrink();
+    } else { // Day
+      if (index % 2 != 0 && index != _chartData.length -1) return const SizedBox.shrink();
     }
 
-    final int skipInterval = _selectedTimeRange == ChartTimeRange.hour ? 4 : 2;
-    if (index % skipInterval != 0 && index != _aggregatedData.length -1) {
-      return const SizedBox.shrink();
-    }
-
-    final point = _aggregatedData[index];
+    final point = _chartData[index];
     String text = _selectedTimeRange == ChartTimeRange.hour
         ? DateFormat('H:00').format(point.timestamp)
         : DateFormat('dd/MM').format(point.timestamp);
 
-    // << 7. Cập nhật màu cho trục X của biểu đồ >>
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
