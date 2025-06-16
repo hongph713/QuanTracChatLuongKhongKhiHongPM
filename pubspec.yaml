@@ -37,6 +37,7 @@ dependencies:
   # (Tùy chọn, nếu bạn muốn dùng Provider để quản lý state phức tạp hơn sau này)
   # provider: ^6.0.0
   cupertino_icons: ^1.0.2 # Mặc định có
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -48,3 +49,14 @@ flutter:
   generate: true
   assets:
     - assets/map_styles/dark_mode.json
+    - assets/logo.png
+# Thêm phần này vào cuối file pubspec.yaml
+# Chú ý căn lề, "flutter_launcher_icons" không có dấu cách ở đầu
+flutter_launcher_icons:
+  android: true                # Bật tạo icon cho Android
+  ios: true                    # Bật tạo icon cho iOS
+  image_path: "assets/logo.png" # Đường dẫn tới file logo gốc của bạn
+
+  # Cấu hình cho Adaptive Icon của Android 8.0+
+  adaptive_icon_background: "#FFFFFF"     # Màu nền của icon (ví dụ: màu trắng)
+  adaptive_icon_foreground: "assets/logo.png" # Hình ảnh chính của icon

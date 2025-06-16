@@ -87,7 +87,7 @@ class StationDetailScreen extends StatelessWidget {
                         Icon(Icons.thermostat_outlined, color: colorScheme.onSurface.withOpacity(0.7), size: 20),
                         const SizedBox(width: 4),
                         Text(
-                            '${station.nhietDo.toStringAsFixed(1)}°C',
+                            '${station.nhietDo.toStringAsFixed(0)}°C',
                             style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface)
                         ),
                         const SizedBox(width: 24),

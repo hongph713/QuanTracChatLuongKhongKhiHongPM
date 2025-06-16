@@ -194,7 +194,7 @@ class BackgroundTaskService {
     await Workmanager().registerPeriodicTask(
       inexactPeriodicTask,
       inexactPeriodicTask,
-      frequency: const Duration(minutes: 20),
+      frequency: const Duration(hours: 12),
       constraints: Constraints(networkType: NetworkType.connected),
       existingWorkPolicy: ExistingWorkPolicy.replace,
     );
