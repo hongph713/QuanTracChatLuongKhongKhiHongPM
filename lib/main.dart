@@ -371,6 +371,7 @@
 // // lib/main.dart
 import 'package:datn_20242/screens/map_screen/widgets/map_screen.dart';
 import 'package:datn_20242/services/location_service.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -407,6 +408,8 @@ void onNotificationTap(NotificationResponse notificationResponse) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
+  FirebaseDatabase.instance.setPersistenceCacheSizeBytes(100 * 1024 * 1024); // 100MB
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

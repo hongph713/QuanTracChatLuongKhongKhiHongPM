@@ -148,7 +148,7 @@ class NotificationService {
       channelDescription: 'Kênh thông báo chỉ số chất lượng không khí định kỳ.',
       importance: Importance.max,
       priority: Priority.high,
-      fullScreenIntent: true,
+      //fullScreenIntent: true,
     );
 
     final NotificationDetails platformDetails =
