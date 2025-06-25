@@ -143,7 +143,7 @@ class NotificationService {
     String? payload,
   }) async {
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'periodic_aqi_channel_v3', // Đổi ID để đảm bảo cài đặt mới được áp dụng
+      'periodic_aqi_channel_v4', // Đổi ID để đảm bảo cài đặt mới được áp dụng
       'Cập nhật AQI định kỳ',
       channelDescription: 'Kênh thông báo chỉ số chất lượng không khí định kỳ.',
       importance: Importance.max,

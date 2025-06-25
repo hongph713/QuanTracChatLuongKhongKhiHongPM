@@ -408,8 +408,6 @@ void onNotificationTap(NotificationResponse notificationResponse) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirebaseDatabase.instance.setPersistenceEnabled(true);
-  FirebaseDatabase.instance.setPersistenceCacheSizeBytes(100 * 1024 * 1024); // 100MB
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

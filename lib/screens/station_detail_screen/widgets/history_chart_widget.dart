@@ -2022,7 +2022,7 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
             toY: displayHeight,
             color: barColor,
             // MODIFIED: Giảm chiều rộng cột và bo góc tương ứng
-            width: 12,
+            width: 10,
             borderRadius: const BorderRadius.all(Radius.circular(4)),
           ),
         ],
@@ -2072,7 +2072,7 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
             valueString = displayValue.toStringAsFixed(1);
           }
 
-          final dataType = _selectedDataType == ChartDataType.aqi ? 'AQI' : 'PM2.5';
+          final dataType = _selectedDataType == ChartDataType.aqi ? 'AQI' : 'PM10';
 
           // MODIFIED: Xác định màu chữ dựa trên chủ đề (theme) hiện tại
           final textColor = theme.brightness == Brightness.dark ? Colors.white : Colors.black;
@@ -2106,7 +2106,7 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
         const SizedBox(height: 4),
         Center(
           child: Text(
-            '${_selectedDataType == ChartDataType.aqi ? "AQI" : "PM2.5"} ${l10n?.average ?? "trung bình"}: ${_averageValue.toStringAsFixed(1)}',
+            '${_selectedDataType == ChartDataType.aqi ? "AQI" : "PM10"} ${l10n?.average ?? "trung bình"}: ${_averageValue.toStringAsFixed(1)}',
             style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
@@ -2191,7 +2191,7 @@ class _HistoryChartWidgetState extends State<HistoryChartWidget> {
         constraints: const BoxConstraints(minWidth: 80.0),
         children: const [
           Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('AQI')),
-          Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('PM2.5')),
+          Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('PM10')),
         ],
       ),
     );

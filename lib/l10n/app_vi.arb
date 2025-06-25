@@ -46,7 +46,7 @@
   "aqiMessageVeryUnhealthy": "Rất có hại cho sức khỏe. Mọi người nên ở trong nhà!",
   "aqiMessageHazardous": "Nguy hiểm. Mọi người nên ở trong nhà và bật máy lọc không khí!",
 
-  "mainPollutantPM25": "Chất gây ô nhiễm chính: PM2.5",
+  "mainPollutantPM25": "Chất gây ô nhiễm chính: PM10",
   "temperature": "Nhiệt độ",
   "humidity": "Độ ẩm",
 

@@ -20,8 +20,8 @@ class HealthRecommendation {
 class AQIUtils {
 // Tính chỉ số AQI dựa trên nồng độ bụi mịn PM2.5 (μg/m³)
   static int calculateAQI(double pm25) {
-    const List<double> pm25Breakpoints = [0, 12.1, 35.5, 55.5, 150.5, 250.5, 350.5, 500.5];
-    const List<int> aqiBreakpoints = [0, 51, 101, 151, 201, 301, 401, 500];
+    const List<double> pm25Breakpoints = [0, 55, 155, 255, 355, 425, 605];
+    const List<int> aqiBreakpoints = [0, 51, 101, 151, 201, 301, 500];
 
     int i = 0;
     while (i < pm25Breakpoints.length - 1) {

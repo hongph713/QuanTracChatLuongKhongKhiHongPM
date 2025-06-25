@@ -177,7 +177,7 @@ class StationDetailScreen extends StatelessWidget {
     if (l10n != null) {
       return l10n.mainPollutantPM25 ?? 'Chất gây ô nhiễm chính: PM2.5';
     }
-    return 'Chất gây ô nhiễm chính: PM2.5';
+    return 'Chất gây ô nhiễm chính: PM10';
   }
 
   String _getHealthRecommendationTitle(AppLocalizations? l10n) {

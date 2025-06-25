@@ -46,7 +46,7 @@
   "aqiMessageVeryUnhealthy": "Very harmful to health. Everyone should stay indoors!",
   "aqiMessageHazardous": "Hazardous. Everyone should stay indoors and turn on air purifiers!",
 
-  "mainPollutantPM25": "Main Pollutant: PM2.5",
+  "mainPollutantPM25": "Main Pollutant: PM10",
   "temperature": "Temperature",
   "humidity": "Humidity",
 
